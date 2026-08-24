@@ -1,970 +1,1098 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulateur d'efforts dynamique - Fermette (Cycle 4)</title>
-    <style>
-        :root {
-            --primary: #1e272e;
-            --secondary: #485460;
-            --accent: #0fb9b1;
-            --bg: #d2dae2;
-            --text: #1e272e;
-            --panel-bg: #ffffff;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: var(--bg);
-            color: var(--text);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        h1 { color: var(--primary); }
-        .container {
-            display: flex;
-            gap: 20px;
-            max-width: 1300px;
-            width: 100%;
-        }
-        .panel {
-            background: var(--panel-bg);
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
-        }
-        .controls {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        .visualization {
-            flex: 2;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        canvas {
-            background: #fdfdfd;
-            border: 2px solid #d1d8e0;
-            border-radius: 6px;
-            margin-bottom: 15px;
-            box-shadow: inset 0 0 15px rgba(0,0,0,0.05);
-            width: 100%;
-            max-width: 800px;
-        }
-        .level-selector {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 25px;
-        }
-        .level-btn {
-            padding: 10px 25px;
-            border: none;
-            border-radius: 20px;
-            background: #a4b0be;
-            cursor: pointer;
-            font-weight: bold;
-            color: white;
-            transition: 0.3s;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        .level-btn.active {
-            background: var(--accent);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(15, 185, 177, 0.3);
-        }
-        .control-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        .control-group label {
-            font-weight: 600;
-            font-size: 0.95em;
-            color: var(--secondary);
-        }
-        select, input[type="number"], input[type="range"] {
-            padding: 8px;
-            border: 1px solid #ced6e0;
-            border-radius: 6px;
-            width: 100%;
-            box-sizing: border-box;
-            background-color: #f1f2f6;
-            font-family: inherit;
-        }
-        .checkbox-group {
-            background: #f1f2f6;
-            padding: 12px;
-            border-radius: 6px;
-            border: 1px solid #ced6e0;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        .checkbox-group > label {
-            font-weight: normal;
-            font-size: 0.9em;
-            color: var(--text);
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-            margin-top: 2px;
-        }
-        .checkbox-group input[type="checkbox"] {
-            width: auto;
-            margin-right: 10px;
-            cursor: pointer;
-            transform: scale(1.2);
-        }
-        .force-slider {
-            padding-left: 28px;
-            margin-bottom: 5px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 0.85em;
-            color: var(--accent);
-            font-weight: bold;
-        }
-        .force-slider input[type="range"] {
-            flex: 1;
-            padding: 0;
-            height: 6px;
-            cursor: pointer;
-        }
-        .force-val-text {
-            width: 55px;
-            text-align: right;
-            display: inline-block;
-        }
-        .results {
-            background: #f8f9fa;
-            padding: 20px;
-            border-left: 5px solid var(--accent);
-            border-radius: 6px;
-            width: 100%;
-            box-sizing: border-box;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-        .hidden { display: none !important; }
-        .material-info {
-            font-size: 0.85em;
-            background: #e8f4f8;
-            padding: 12px;
-            border-radius: 6px;
-            margin-top: 5px;
-            border: 1px solid #d1d8e0;
-            line-height: 1.5;
-        }
-        .alert {
-            color: #eb3b5a;
-            font-weight: bold;
-            background: #fc5c6522;
-            padding: 10px;
-            border-radius: 4px;
-            border: 1px solid #fc5c65;
-            animation: pulse 1.5s infinite;
-        }
-        .geo-box {
-            background: #fff3e0; 
-            padding: 12px; 
-            border-radius: 6px; 
-            border: 1px dashed #e67e22;
-        }
-        .profile-box {
-            background: #eaf2f8; 
-            padding: 12px; 
-            border-radius: 6px; 
-            border: 1px dashed #3498db;
-        }
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.7; }
-            100% { opacity: 1; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulateur 3D : Résistance des Matériaux</title>
+
+<!-- Import de Three.js et OrbitControls via CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+<style>
+  /* =========================================
+     VARIABLES ET STYLES GLOBAUX
+  ========================================= */
+  :root {
+    --bleu: #1565c0; --bleu-clair: #e3f2fd;
+    --teal: #00897b; --orange: #ef6c00;
+    --fond: #f4f7fb; --carte: #ffffff;
+    --texte: #1c2733; --texte-clair: #5a6b7a;
+    --vert: #2e7d32; --vert-fond: #e8f5e9;
+    --rouge: #c62828; --rouge-fond: #ffebee;
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; 
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    background: var(--fond); 
+    color: var(--texte); 
+    padding: 16px;
+  }
+  .app { max-width: 960px; margin: 0 auto; }
+
+  /* =========================================
+     EN-TÊTE ET LOGOS
+  ========================================= */
+  header { text-align: center; padding: 8px 8px 18px; }
+  .title-wrapper {
+    display: flex; 
+    justify-content: center; 
+    align-items: center;
+    gap: 16px; 
+    margin-bottom: 6px;
+  }
+  header h1 { font-size: clamp(1.3rem, 3vw, 1.9rem); margin: 0; color: var(--bleu); }
+  .header-logo {
+    height: clamp(40px, 6vw, 75px);
+    width: auto;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+  header p { margin: 0; color: var(--texte-clair); font-size: 0.98rem; }
+
+  /* =========================================
+     NAVIGATION ET ONGLETS
+  ========================================= */
+  nav.tabs { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 16px; }
+  nav.tabs button {
+    flex: 1 1 120px; max-width: 200px; padding: 12px 8px; 
+    border: 2px solid transparent; border-radius: var(--radius); 
+    background: var(--carte); font-size: 0.95rem; font-weight: 700; 
+    color: var(--texte-clair); cursor: pointer;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08); transition: all 0.15s;
+  }
+  nav.tabs button .emoji { font-size: 1.2rem; display: block; margin-bottom: 2px; }
+  nav.tabs button.active { border-color: var(--bleu); color: var(--bleu); background: var(--bleu-clair); }
+
+  /* =========================================
+     PANNEAUX ET CONTRÔLES
+  ========================================= */
+  section.panel {
+    display: none; background: var(--carte); border-radius: var(--radius);
+    padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+  }
+  section.panel.active { display: block; }
+  .panel h2 { margin: 0 0 6px; color: var(--bleu); font-size: 1.3rem; }
+  
+  .param-panel {
+    background: var(--fond); border-radius: 12px; padding: 12px 14px 14px;
+    margin-bottom: 14px; display: flex; flex-direction: column; gap: 10px;
+  }
+  .param-group { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .param-label { font-weight: 700; font-size: 0.88rem; min-width: 110px; color: var(--texte-clair); }
+  .param-row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .param-btn {
+    border: 1.5px solid #d3dde6; background: #fff; padding: 6px 12px; border-radius: 999px;
+    font-size: 0.82rem; font-weight: 600; color: var(--texte-clair); cursor: pointer; transition: all 0.15s;
+  }
+  .param-btn.active { border-color: var(--teal); background: var(--teal); color: #fff; }
+  .demo-btn { border-color: var(--bleu); background: var(--bleu); color: #fff; }
+  .demo-btn:hover { background: #0d47a1; }
+
+  /* =========================================
+     ZONE 3D ET SUPERPOSITIONS
+  ========================================= */
+  .stage-3d {
+    width: 100%; height: 320px; background: linear-gradient(180deg, #eef3f8 0%, #dbe4ec 100%);
+    border-radius: 12px; border: 1px solid #dbe4ec; margin-bottom: 14px;
+    position: relative; overflow: hidden; cursor: grab;
+  }
+  .stage-3d:active { cursor: grabbing; }
+  
+  .overlay-status {
+    position: absolute; top: 10px; left: 10px; padding: 6px 14px; border-radius: 999px;
+    font-weight: 700; font-size: 0.92rem; color: #fff; transition: 0.2s; pointer-events: none; z-index: 10;
+  }
+  .overlay-hint {
+    position: absolute; bottom: 10px; right: 10px; font-size: 0.8rem; color: var(--texte-clair);
+    background: rgba(255,255,255,0.8); padding: 4px 8px; border-radius: 6px; pointer-events: none; z-index: 10;
+  }
+
+  .rupture-bubble {
+    position: absolute; top: 40%; left: 50%; transform: translate(-50%, 0);
+    background: var(--rouge); color: white; padding: 8px 16px;
+    border-radius: 8px; font-weight: 700; font-size: 1.05rem;
+    pointer-events: none; opacity: 0;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 4px 12px rgba(198, 40, 40, 0.4); z-index: 20;
+  }
+  .rupture-bubble::after {
+    content: ''; position: absolute; top: 100%; left: 50%;
+    margin-left: -6px; border-width: 6px; border-style: solid;
+    border-color: var(--rouge) transparent transparent transparent;
+  }
+  .rupture-bubble.show { opacity: 1; transform: translate(-50%, -20px); }
+
+  /* =========================================
+     CURSEUR (SLIDER)
+  ========================================= */
+  .controls { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+  .controls label { font-weight: 600; font-size: 0.95rem; }
+  .slider-row { display: flex; align-items: flex-start; gap: 16px; padding-top: 4px; }
+  .slider-wrapper { flex: 1; display: flex; flex-direction: column; }
+  
+  input[type=range] {
+    width: 100%; height: 10px; border-radius: 6px; appearance: none; margin: 0;
+    background: linear-gradient(90deg, var(--vert), var(--orange), var(--rouge)); outline: none;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    appearance: none; width: 26px; height: 26px; border-radius: 50%; background: #fff;
+    border: 4px solid var(--bleu); cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  }
+  .slider-ticks {
+    display: flex; justify-content: space-between; padding: 0 8px; margin-top: 8px;
+    font-size: 0.85rem; color: var(--texte-clair); font-weight: 700; user-select: none;
+  }
+  
+  .reset-btn {
+    border: none; background: var(--texte-clair); color: #fff; padding: 0 16px;
+    border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 0.85rem;
+    height: 36px; margin-top: -5px; white-space: nowrap;
+  }
+  .reset-btn:hover { background: var(--bleu); }
+
+  footer { text-align: center; color: var(--texte-clair); font-size: 0.8rem; margin-top: 18px; padding-bottom: 6px; }
+
+  @media (max-width: 820px) {
+    .stage-3d { height: 250px; }
+    nav.tabs button { font-size: 0.82rem; padding: 8px 4px; flex: 1 1 90px; }
+    .param-label { min-width: 80px; }
+    .title-wrapper { gap: 10px; }
+  }
+</style>
 </head>
 <body>
+<div class="app">
 
-    <header>
-        <h1>Modélisation Structurelle - Fermette</h1>
-        <div class="level-selector">
-            <button class="level-btn" onclick="setLevel(5)">Niveau 5ème</button>
-            <button class="level-btn" onclick="setLevel(4)">Niveau 4ème</button>
-            <button class="level-btn" onclick="setLevel(3)">Niveau 3ème</button>
+  <!-- EN-TÊTE -->
+  <header>
+    <div class="title-wrapper">
+      <!-- Les espaces du nom de fichier sont remplacés par %20 -->
+      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACkAAAAeCAYAAACxHzfjAAAAIGNIUk0AAHomAACAhAAA+gAAAIDoAAB1MAAA6mAAADqYAAAXcJy6UTwAAAAGYktHRAD/AP8A/6C9p5MAAAAJcEhZcwAALiMAAC4jAXilP3YAAAAHdElNRQfqCA0JKjdhFlPwAAABMHpUWHRSYXcgcHJvZmlsZSB0eXBlIHhtcAAAKJF1kkFWxSAMRedZhUtIE0hgOf0FZp7j0OX7AlX0q+W0tOSR3BdK769v9BKXipJeXvT0Ys3ZmmVPdgjHt13WXSOmTcQOSzZMLOu51r/UQ0SYdhosPmJLLqllFk5qw7FRWE268rxFOzc+uQJAkNr0zJJSMnqqvoJBUDxhsJ6oOHxe0h0i6bOAy9BDawy8MalgEjzbSoJZvSItoL1IiwIR/iT5zgKQ7GqK70rTUoX7DrZbgH4IqqIDwRYd+EEdenvmpgCfVftuJ97RH2uwdG8KG7NH4zvbpLsVBMBwXC3fdm4+7ejAtVP9r1tpKbLK+Mv1Nr1PaivXWa1IrNPvv2gFhdfQS4cXRA/YfYRCOKgs+hcn6Tq00wf3V55bxS/k5wAAAAFvck5UAc+id5oAAAdKSURBVFjDvZZrUJTnFcd/77u7wMLugkC4eiEkghcEb3iJt6jxbgzRtpNMSFxNtVHTdhLrh3baD71Mqs3YsZPEqU7pNAlppDGgHTSNoziRCFXEFAnNtE69IJeNsEi57X2ffnjPWrykGsU+Mzu7nPe85/zP//zPeTBxh7Nq1QLC4QHGjZtIc/MVPT09LVXXtWiv1+epqCgnJ2c0CQkJfPnl1TuFuuejfTW4VXi9fbjd3ZSVVVBUtDx72YqVL06dOnX5gMfTf7K6+r0PyvaVbdi4sauyshKlwsybN5+9e/cOOUjTzYZt29bj9ep0dXUye9YcqqqqktzXOtc5163fuXr6tDUF7ZfTxjisI8fPW7D40QkF0+rrz3RXV396ee7cecHTp0+RnZ1NW1vbgwWpVCzBoJ+GhnMxaRnpK769YePOZ5Yt/c7Uq+1p+p6deI69T6jxCIl9raa8mbOyc2Y8vjI7d8zovzc1tdbXn223WEwqN/dRWlvbHxzIkSOH4+7ssG9+ectrTqfzFwuTh+XG7d6l9/+xhHDYhZ4GeoKfUNc/UQ3HyNRUdP6cxQWj8iattDkcvVVVxz9LSUlWLtfQafQWkMtXrCAxKWnJi8XFvyocOSLWHBNDuKeHUMdFiLmGKTGIPiyE7lCgfPib6tHr6hi7aLU9nJY5tunzc382m6O629tdQwZSv9kwedJkHkpNy0g2maKvvfpdBg7sJ27dRpL27COuyIme4ECP8aHbAmgxYSxjJhL3witEj80nJTk50eGIT4iKihoygLcFaTKZ0HRNocKE2lro++0bBJrOoaekEffsD3F8rwzLuKdRPitRBcU4flCGeXQ+vk8+Qvl9Ck2/FxxfD+SNT3W0GB0sGv6zH9PzlhPV58Y0fCqafRLWlT8i+EUlPb8uwldXabyj3UXWr3nMX/1IMxLGKTQzKJOfUMtR+vfVoGle9IdmoccPI/zvKyh/D5gfALo7g1TGx6IMvDrodg3N4kF5dAIXPqf/wzeJme3EZs3HX1MLSv1/QAYCAVQ4DLrJQBZU1zErvw5BnZDbQrjXR+9brxO67MG2fguhpqFd4IPPLZo8c6YOV1tbc7vPNxD7zWfRzQmEOjpQIRPhHjNBt4VgiwXVn0Lsk5uIK96AutaJNnES7W53R3dXV5ff7x9SkLfsSbNZp7GxsS3KarXETn9sQvrji63RAR/h/h68J46i+kzQlUD8T3Zhc25Cj4/nam8vVf+6dOHQ4cM/P3r0WPWIERkP9sZ55JFsoqKiA+XlFdUdbvfpXseweFtuXlaiI9Gszl8meN6Fbkshfssr9Jss1NbWuMvKD/yh9L3SrYcqDx3NyEglOTmJ5ubWBweyufkKWVkPY7fbwrk5ORd3bN9+qHfAc95jT8hMWbImPbFgpmZauIQvAiHv/oryQ6WlpVtLSn6/Z8KECS5dg5TUVGpr64au1/yPraaUYsaMGXg8/Wze/DI7dvwyY+VTRc9PnjLlSa/H03eyuvrd0ndLDzqda/tOnvyU2NhYGhoahxTcXZ+8vHEopSgsnIIyVowNsJaUlDB+/Fjy8/OZPHnSfeUYeN5OX7Ed7wt2ep+z0Vdsu4VJDRgPjMVofxtwEgjdJl4M4ATqNE2rV3e3F8cB84F3gN7bOZTPt/JEhinZrDMrEOLEqc7QtcVHPDf4xANvAF1AC7BdbHGDfGxAtNjrgZcAixRoA6IAK//VuBlwyO+ngQYgXf52cOMs2ABLb7F9unet/bhvrb0AYzU6JD5mqe6nQB5wFjgM7AbswO/E5yWgW+x+4BlgmbDzGJAiIBuAt4GtQD5QKZ0JStE/BhZJnl3AN4AngL4RH/T9Kcuu17f2h63A68AY4BPgNyaM+y8kiV3AXHGIkuRFEvSCVFgIfAYkACOBADARqAHWCDNLgQpgHdADDJcuvQqUAavFtgbYDyz0hhhwDailA0HswFPAVZHgwciNo6RaXb4dwEVJ7BdAaYNa+jfgPJAkLbkCnBIJREucZInrAYYBo4SMZInhFb9U0boSe0gICgBHgP6INkLSzhZpd6I4nhHHQgl6UOxngWYB/w9paY0wfwTowBjGt4EPxX4JqAWmAR8Bb0oBucJqjeR/XyQYD7QC15euFXgO+BnwLdHh4Ht98D6N2BcJ+MFn8ECYb3on8izyb7sN2CY6bwRm3hQrOpI38mIB8H3ggGgvA5gtTmNEG9lSTIe0LlV0MxxYIEx7MAYhVzpTKCy2SDsjXYucNIwBfQc4AYQHPbvuF2EoCXhNKqrDmObzAiAGcEuQRcL2JoyVchF4GGOQoiWhQ1gKCsDdGHv3no9JgIaAJmA9kCksuTC0Fwf8BUNrczCGIwdDN5kY2twjLCwXcC7gYwFskSLuC2QcsAVjbSiM1eGQpG3C0EUMEQeAtcBxjNVySYAuxhD6KWG/W4rIkjx/vR+QmgDNlLZ2AZ0YU5uBobkght4iK2O4MBUjoC0Y2rqCoclRUliXFOsCBu4H5H8Av+aQ+2swzasAAACEZVhJZk1NACoAAAAIAAUBEgADAAAAAQABAAABGgAFAAAAAQAAAEoBGwAFAAAAAQAAAFIBKAADAAAAAQACAACHaQAEAAAAAQAAAFoAAAAAAAABLAAAAAEAAAEsAAAAAQADoAEAAwAAAAEAAQAAoAIABAAAAAEAAAP3oAMABAAAAAEAAALvAAAAACVdN5IAAAAldEVYdGRhdGU6Y3JlYXRlADIwMjYtMDgtMTNUMDk6NDI6MjIrMDA6MDA/oeFFAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDI2LTA4LTEzVDA5OjQyOjIyKzAwOjAwTvxZ+QAAACh0RVh0ZGF0ZTp0aW1lc3RhbXAAMjAyNi0wOC0xM1QwOTo0Mjo1NSswMDowMNaLT7EAAAARdEVYdGV4aWY6Q29sb3JTcGFjZQAxD5sCSQAAABJ0RVh0ZXhpZjpFeGlmT2Zmc2V0ADkwWYzemwAAABl0RVh0ZXhpZjpQaXhlbFhEaW1lbnNpb24AMTAxNa7vNUoAAAAYdEVYdGV4aWY6UGl4ZWxZRGltZW5zaW9uADc1MdXAGXoAAAASdEVYdHRpZmY6T3JpZW50YXRpb24AMber/DsAAAAASUVORK5CYII=" alt="" width="41" height="30" />
+      <h1>🔩 Simulateur 3D Interactif</h1>
+      <img src="data:image/png;base64,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" alt="" width="41" height="30" />
+    </div>
+    <p>Résistance des matériaux : Rendu 3D complet avec échelles de force dynamiques.</p>
+  </header>
+
+  <!-- ONGLETS -->
+  <nav class="tabs">
+    <button id="tab-btn-torsion" class="active" onclick="switchTab('torsion')"><span class="emoji">🌀</span>Torsion</button>
+    <button id="tab-btn-flexion" onclick="switchTab('flexion')"><span class="emoji">📐</span>Flexion</button>
+    <button id="tab-btn-cisaillement" onclick="switchTab('cisaillement')"><span class="emoji">✂️</span>Cisaillement</button>
+    <button id="tab-btn-traction" onclick="switchTab('traction')"><span class="emoji">↕️</span>Traction/Comp.</button>
+  </nav>
+
+  <!-- ============ PANNEAU : TORSION ============ -->
+  <section id="panel-torsion" class="panel active">
+    <div class="param-panel">
+      <div class="param-group">
+        <span class="param-label">Matériau</span>
+        <div class="param-row">
+          <button class="param-btn active" data-sim="torsion" data-key="material" data-val="acier" onclick="onParamClick(this)">⚙️ Acier</button>
+          <button class="param-btn" data-sim="torsion" data-key="material" data-val="alu" onclick="onParamClick(this)">🥫 Aluminium</button>
+          <button class="param-btn" data-sim="torsion" data-key="material" data-val="bois" onclick="onParamClick(this)">🌳 Bois</button>
+          <button class="param-btn" data-sim="torsion" data-key="material" data-val="pla" onclick="onParamClick(this)">🧵 PLA</button>
+          <button class="param-btn demo-btn" onclick="playAutoDemo('torsion')">🎬 Démo animée</button>
         </div>
-    </header>
-
-    <div class="container">
-        <div class="panel controls">
-            <h3 style="margin-top: 0; margin-bottom: 10px;">Paramètres de l'étude</h3>
-            
-            <div class="control-group geo-box">
-                <label style="color: #d35400;">Dimensions géométriques (Maquette)</label>
-                <div style="display: flex; gap: 10px; margin-top: 5px;">
-                    <div style="flex: 1;">
-                        <label style="font-size: 0.8em; font-weight: normal;">Entrait (mm)</label>
-                        <input type="number" id="dim-entrait" value="300" step="10" min="10" oninput="updateSimulation()">
-                    </div>
-                    <div style="flex: 1;">
-                        <label style="font-size: 0.8em; font-weight: normal;">Arbalétriers (mm)</label>
-                        <input type="number" id="dim-arba" value="200" step="10" min="10" oninput="updateSimulation()">
-                    </div>
-                </div>
-                <div style="font-size: 0.85em; color: #d35400; margin-top: 10px;">
-                    <strong>Déductions automatiques :</strong><br>
-                    Poinçon : <span id="val-poincon">132.3</span> mm<br>
-                    Contrefiches : <span id="val-contrefiche">100.0</span> mm
-                </div>
-                <div id="dim-error" class="alert hidden" style="font-size: 0.85em; padding: 5px; margin-top: 8px;">
-                    ⚠️ Géométrie impossible : Les arbalétriers sont trop courts pour se rejoindre !
-                </div>
-            </div>
-
-            <div class="control-group">
-                <label>Architecture de la structure</label>
-                <div class="checkbox-group" style="background: #e8f4f8; border-color: #bde0f0;">
-                    <label><input type="checkbox" id="struct-poincon" checked onchange="updateSimulation()"> Poinçon (Pièce centrale verticale)</label>
-                    <label><input type="checkbox" id="struct-contrefiche-g" checked onchange="updateSimulation()"> Contrefiche Gauche</label>
-                    <label><input type="checkbox" id="struct-contrefiche-d" checked onchange="updateSimulation()"> Contrefiche Droite</label>
-                </div>
-            </div>
-
-            <div class="control-group lvl-3 hidden">
-                <label style="color: var(--accent);">Valeur maximale des curseurs de force (N)</label>
-                <input type="number" id="force-max" value="10000" min="10" step="50" oninput="updateForceMax()">
-            </div>
-
-            <div class="control-group">
-                <label>Points d'application des forces</label>
-                <div class="checkbox-group">
-                    
-                    <label><input type="checkbox" id="force-C" checked onchange="updateSimulation()"> Nœud C (Faitage) - Charge verticale</label>
-                    <div id="slider-C" class="force-slider hidden">
-                        <input type="range" id="val-force-C" min="0" max="10000" step="10" value="150" oninput="updateSimulation()"> 
-                        <span id="text-force-C" class="force-val-text">150</span> N
-                    </div>
-
-                    <label><input type="checkbox" id="force-E" onchange="updateSimulation()"> Nœud E (Arbalétrier Gauche) - Charge verticale</label>
-                    <div id="slider-E" class="force-slider hidden">
-                        <input type="range" id="val-force-E" min="0" max="10000" step="10" value="150" oninput="updateSimulation()"> 
-                        <span id="text-force-E" class="force-val-text">150</span> N
-                    </div>
-
-                    <label><input type="checkbox" id="force-F" onchange="updateSimulation()"> Nœud F (Arbalétrier Droit) - Charge verticale</label>
-                    <div id="slider-F" class="force-slider hidden">
-                        <input type="range" id="val-force-F" min="0" max="10000" step="10" value="150" oninput="updateSimulation()"> 
-                        <span id="text-force-F" class="force-val-text">150</span> N
-                    </div>
-
-                    <label><input type="checkbox" id="force-D" onchange="updateSimulation()"> Nœud D (Entrait) - Charge suspendue</label>
-                    <div id="slider-D" class="force-slider hidden">
-                        <input type="range" id="val-force-D" min="0" max="10000" step="10" value="150" oninput="updateSimulation()"> 
-                        <span id="text-force-D" class="force-val-text">150</span> N
-                    </div>
-
-                    <label><input type="checkbox" id="force-AB" onchange="updateSimulation()"> Nœuds A & B (Appuis) - Traction écartement</label>
-                    <div id="slider-AB" class="force-slider hidden">
-                        <input type="range" id="val-force-AB" min="0" max="10000" step="10" value="150" oninput="updateSimulation()"> 
-                        <span id="text-force-AB" class="force-val-text">150</span> N
-                    </div>
-                </div>
-            </div>
-
-            <div class="control-group">
-                <label>Matériau de la structure</label>
-                <select id="materiau" onchange="updateSimulation()">
-                    <option value="bois">Bois de charpente (Épicéa)</option>
-                    <option value="balsa" selected>Bois de maquette (Balsa)</option>
-                    <option value="acier">Acier S235 (Construction)</option>
-                    <option value="aluminium">Aluminium 6060</option>
-                    <option value="abs">Plastique rigide (ABS)</option>
-                    <option value="pvc_rigide">Plastique (PVC Rigide)</option>
-                    <option value="pvc_expanse">Plastique souple (PVC Expansé / Forex)</option>
-                </select>
-                <div id="material-info" class="material-info"></div>
-            </div>
-
-            <div class="control-group lvl-4 hidden profile-box">
-                <label style="color: #2980b9;">Profilé de la poutre</label>
-                <select id="section-forme" onchange="updateSimulation()">
-                    <option value="carree">Carrée</option>
-                    <option value="rectangulaire">Rectangulaire</option>
-                </select>
-                
-                <div id="inputs-carree" style="display: flex; gap: 10px; margin-top: 5px;">
-                    <div style="flex: 1;">
-                        <label style="font-size: 0.8em; font-weight: normal;">Côté (mm)</label>
-                        <input type="number" id="dim-a" value="10" min="0" step="1" oninput="updateSimulation()">
-                    </div>
-                </div>
-
-                <div id="inputs-rect" style="display: none; gap: 10px; margin-top: 5px;">
-                    <div style="flex: 1;">
-                        <label style="font-size: 0.8em; font-weight: normal;">Largeur (mm)</label>
-                        <input type="number" id="dim-b" value="10" min="0" step="1" oninput="updateSimulation()">
-                    </div>
-                    <div style="flex: 1;">
-                        <label style="font-size: 0.8em; font-weight: normal;">Hauteur (mm)</label>
-                        <input type="number" id="dim-h" value="20" min="0" step="1" oninput="updateSimulation()">
-                    </div>
-                </div>
-
-                <div style="font-size: 0.85em; color: #2980b9; margin-top: 10px;">
-                    <strong>Section calculée : <span id="section-val">100.0</span> mm²</strong>
-                </div>
-            </div>
-
-            <div class="control-group lvl-3 hidden">
-                <label>Saisie : Mesure expérimentale (mm)</label>
-                <input type="number" id="mesure-exp" placeholder="Exemple : 4.5" step="0.1" oninput="updateSimulation()">
-            </div>
+      </div>
+      <div class="param-group">
+        <span class="param-label">Section</span>
+        <div class="param-row">
+          <button class="param-btn" data-sim="torsion" data-key="section" data-val="fine" onclick="onParamClick(this)">Fine</button>
+          <button class="param-btn active" data-sim="torsion" data-key="section" data-val="moyenne" onclick="onParamClick(this)">Moyenne</button>
+          <button class="param-btn" data-sim="torsion" data-key="section" data-val="epaisse" onclick="onParamClick(this)">Épaisse</button>
         </div>
-
-        <div class="panel visualization">
-            <h3 style="margin-top: 0;">Rendu Cinématique & Contraintes</h3>
-            <canvas id="fermetteCanvas" width="800" height="400"></canvas>
-            
-            <div class="results" id="result-panel">
-                <h4 style="margin-top: 0; color: var(--secondary);">Analyse des résultats</h4>
-                <p><strong>Déplacement nodal max (théorique) :</strong> <span id="res-deformation" style="font-size: 1.2em; color: var(--accent);">0.00</span> mm</p>
-                <div id="res-lvl3" class="hidden">
-                    <p><strong>Taux de travail global (pire cas) :</strong> <span id="res-taux">0.0</span> %</p>
-                    <p><strong>Écart modèle/réel :</strong> <span id="res-ecart" style="font-style: italic;">En attente de saisie...</span></p>
-                    <p id="alerte-rupture" class="alert hidden">⚠️ RUPTURE : Limite d'élasticité dépassée ou structure trop faible !</p>
-                </div>
-            </div>
+      </div>
+      <div class="param-group">
+        <span class="param-label">Longueur</span>
+        <div class="param-row">
+          <button class="param-btn" data-sim="torsion" data-key="longueur" data-val="courte" onclick="onParamClick(this)">Courte</button>
+          <button class="param-btn active" data-sim="torsion" data-key="longueur" data-val="moyenne" onclick="onParamClick(this)">Moyenne</button>
+          <button class="param-btn" data-sim="torsion" data-key="longueur" data-val="longue" onclick="onParamClick(this)">Longue</button>
         </div>
+      </div>
+    </div>
+    
+    <div id="stage-torsion" class="stage-3d">
+      <div id="status-torsion" class="overlay-status">Élastique</div>
+      <div class="overlay-hint">🔄 Tournez avec la souris</div>
+      <div id="bubble-torsion" class="rupture-bubble"></div>
     </div>
 
-    <script>
-        const materiaux = {
-            bois: { nom: "Bois (Épicéa)", moduleYoung: 11000, limiteElastique: 24, carbone: "Très faible", recyclabilite: "Haute", defaultColor: "#d35400" },
-            balsa: { nom: "Bois de maquette (Balsa)", moduleYoung: 3000, limiteElastique: 12, carbone: "Très faible", recyclabilite: "Haute", defaultColor: "#f5deb3" },
-            acier: { nom: "Acier S235", moduleYoung: 210000, limiteElastique: 235, carbone: "Élevée", recyclabilite: "Très haute", defaultColor: "#7f8c8d" },
-            aluminium: { nom: "Aluminium", moduleYoung: 69000, limiteElastique: 160, carbone: "Très élevée", recyclabilite: "Très haute", defaultColor: "#bdc3c7" },
-            abs: { nom: "Plastique rigide (ABS)", moduleYoung: 2300, limiteElastique: 40, carbone: "Élevée", recyclabilite: "Moyenne", defaultColor: "#f39c12" },
-            pvc_rigide: { nom: "PVC Rigide", moduleYoung: 3000, limiteElastique: 45, carbone: "Très élevée", recyclabilite: "Faible", defaultColor: "#95a5a6" },
-            pvc_expanse: { nom: "PVC Expansé", moduleYoung: 800, limiteElastique: 15, carbone: "Très élevée", recyclabilite: "Faible", defaultColor: "#ecf0f1" }
-        };
+    <div class="controls">
+      <label>Moment de torsion (N.m)</label>
+      <div class="slider-row">
+        <div class="slider-wrapper">
+          <input type="range" id="slider-torsion" min="0" max="20" step="0.1" value="0" oninput="onForceInput('torsion', this.value)">
+          <div class="slider-ticks" id="ticks-torsion"></div>
+        </div>
+        <button class="reset-btn" onclick="resetForce('torsion')">↺ Réinitialiser</button>
+      </div>
+    </div>
+  </section>
 
-        let currentLevel = 5;
-        const canvas = document.getElementById('fermetteCanvas');
-        const ctx = canvas.getContext('2d');
+  <!-- ============ PANNEAU : FLEXION ============ -->
+  <section id="panel-flexion" class="panel">
+    <div class="param-panel">
+      <div class="param-group">
+        <span class="param-label">Matériau</span>
+        <div class="param-row">
+          <button class="param-btn active" data-sim="flexion" data-key="material" data-val="acier" onclick="onParamClick(this)">⚙️ Acier</button>
+          <button class="param-btn" data-sim="flexion" data-key="material" data-val="alu" onclick="onParamClick(this)">🥫 Aluminium</button>
+          <button class="param-btn" data-sim="flexion" data-key="material" data-val="bois" onclick="onParamClick(this)">🌳 Bois</button>
+          <button class="param-btn" data-sim="flexion" data-key="material" data-val="pla" onclick="onParamClick(this)">🧵 PLA</button>
+          <button class="param-btn demo-btn" onclick="playAutoDemo('flexion')">🎬 Démo animée</button>
+        </div>
+      </div>
+      <div class="param-group">
+        <span class="param-label">Section</span>
+        <div class="param-row">
+          <button class="param-btn" data-sim="flexion" data-key="section" data-val="fine" onclick="onParamClick(this)">Fine</button>
+          <button class="param-btn active" data-sim="flexion" data-key="section" data-val="moyenne" onclick="onParamClick(this)">Moyenne</button>
+          <button class="param-btn" data-sim="flexion" data-key="section" data-val="epaisse" onclick="onParamClick(this)">Épaisse</button>
+        </div>
+      </div>
+      <div class="param-group">
+        <span class="param-label">Longueur</span>
+        <div class="param-row">
+          <button class="param-btn" data-sim="flexion" data-key="longueur" data-val="courte" onclick="onParamClick(this)">Courte</button>
+          <button class="param-btn active" data-sim="flexion" data-key="longueur" data-val="moyenne" onclick="onParamClick(this)">Moyenne</button>
+          <button class="param-btn" data-sim="flexion" data-key="longueur" data-val="longue" onclick="onParamClick(this)">Longue</button>
+        </div>
+      </div>
+      <div class="param-group">
+        <span class="param-label">Point d'effort</span>
+        <div class="param-row">
+          <button class="param-btn" data-sim="flexion" data-key="pointForce" data-val="gauche" onclick="onParamClick(this)">📍 1/4 Gauche</button>
+          <button class="param-btn active" data-sim="flexion" data-key="pointForce" data-val="centre" onclick="onParamClick(this)">📍 1/2 Centre</button>
+          <button class="param-btn" data-sim="flexion" data-key="pointForce" data-val="droite" onclick="onParamClick(this)">📍 3/4 Droite</button>
+        </div>
+      </div>
+    </div>
+    
+    <div id="stage-flexion" class="stage-3d">
+      <div id="status-flexion" class="overlay-status">Élastique</div>
+      <div class="overlay-hint">🔄 Tournez avec la souris</div>
+      <div id="bubble-flexion" class="rupture-bubble"></div>
+    </div>
 
-        // Variables de cinématique
-        let currentDef = 0;
-        let targetDef = 0;
-        let currentStressRate = 0;
-        let targetStressRate = 0;
+    <div class="controls">
+      <label>Charge perpendiculaire (N)</label>
+      <div class="slider-row">
+        <div class="slider-wrapper">
+          <input type="range" id="slider-flexion" min="0" max="20" step="0.1" value="0" oninput="onForceInput('flexion', this.value)">
+          <div class="slider-ticks" id="ticks-flexion"></div>
+        </div>
+        <button class="reset-btn" onclick="resetForce('flexion')">↺ Réinitialiser</button>
+      </div>
+    </div>
+  </section>
 
-        // Variables de la Caméra Auto-Adaptative
-        let camX = 400;
-        let camY = 200;
-        let camScale = 1;
+  <!-- ============ PANNEAU : CISAILLEMENT ============ -->
+  <section id="panel-cisaillement" class="panel">
+    <div class="param-panel">
+      <div class="param-group">
+        <span class="param-label">Matériau</span>
+        <div class="param-row">
+          <button class="param-btn active" data-sim="cisaillement" data-key="material" data-val="acier" onclick="onParamClick(this)">⚙️ Acier</button>
+          <button class="param-btn" data-sim="cisaillement" data-key="material" data-val="alu" onclick="onParamClick(this)">🥫 Aluminium</button>
+          <button class="param-btn" data-sim="cisaillement" data-key="material" data-val="bois" onclick="onParamClick(this)">🌳 Bois</button>
+          <button class="param-btn" data-sim="cisaillement" data-key="material" data-val="pla" onclick="onParamClick(this)">🧵 PLA</button>
+          <button class="param-btn demo-btn" onclick="playAutoDemo('cisaillement')">🎬 Démo animée</button>
+        </div>
+      </div>
+      <div class="param-group">
+        <span class="param-label">Section</span>
+        <div class="param-row">
+          <button class="param-btn" data-sim="cisaillement" data-key="section" data-val="fine" onclick="onParamClick(this)">Fine</button>
+          <button class="param-btn active" data-sim="cisaillement" data-key="section" data-val="moyenne" onclick="onParamClick(this)">Moyenne</button>
+          <button class="param-btn" data-sim="cisaillement" data-key="section" data-val="epaisse" onclick="onParamClick(this)">Épaisse</button>
+        </div>
+      </div>
+      <div class="param-group">
+        <span class="param-label">Longueur</span>
+        <div class="param-row">
+          <button class="param-btn" data-sim="cisaillement" data-key="longueur" data-val="courte" onclick="onParamClick(this)">Courte</button>
+          <button class="param-btn active" data-sim="cisaillement" data-key="longueur" data-val="moyenne" onclick="onParamClick(this)">Moyenne</button>
+          <button class="param-btn" data-sim="cisaillement" data-key="longueur" data-val="longue" onclick="onParamClick(this)">Longue</button>
+        </div>
+      </div>
+    </div>
+    
+    <div id="stage-cisaillement" class="stage-3d">
+      <div id="status-cisaillement" class="overlay-status">Élastique</div>
+      <div class="overlay-hint">🔄 Tournez avec la souris</div>
+      <div id="bubble-cisaillement" class="rupture-bubble"></div>
+    </div>
 
-        function init() {
-            setLevel(5);
-            animate();
+    <div class="controls">
+      <label>Forces cisaillantes (N)</label>
+      <div class="slider-row">
+        <div class="slider-wrapper">
+          <input type="range" id="slider-cisaillement" min="0" max="20" step="0.1" value="0" oninput="onForceInput('cisaillement', this.value)">
+          <div class="slider-ticks" id="ticks-cisaillement"></div>
+        </div>
+        <button class="reset-btn" onclick="resetForce('cisaillement')">↺ Réinitialiser</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PANNEAU : TRACTION/COMPRESSION ============ -->
+  <section id="panel-traction" class="panel">
+    <div class="param-panel">
+      <div class="param-group">
+        <span class="param-label">Effort</span>
+        <div class="param-row">
+          <button class="param-btn active" data-sim="traction" data-key="mode" data-val="traction" onclick="onParamClick(this)">🧲 Traction</button>
+          <button class="param-btn" data-sim="traction" data-key="mode" data-val="compression" onclick="onParamClick(this)">🗜️ Compression</button>
+          <button class="param-btn demo-btn" onclick="playAutoDemo('traction')">🎬 Démo animée</button>
+        </div>
+      </div>
+      <div class="param-group">
+        <span class="param-label">Matériau</span>
+        <div class="param-row">
+          <button class="param-btn active" data-sim="traction" data-key="material" data-val="acier" onclick="onParamClick(this)">⚙️ Acier</button>
+          <button class="param-btn" data-sim="traction" data-key="material" data-val="alu" onclick="onParamClick(this)">🥫 Aluminium</button>
+          <button class="param-btn" data-sim="traction" data-key="material" data-val="bois" onclick="onParamClick(this)">🌳 Bois</button>
+          <button class="param-btn" data-sim="traction" data-key="material" data-val="pla" onclick="onParamClick(this)">🧵 PLA</button>
+        </div>
+      </div>
+      <div class="param-group">
+        <span class="param-label">Section</span>
+        <div class="param-row">
+          <button class="param-btn" data-sim="traction" data-key="section" data-val="fine" onclick="onParamClick(this)">Fine</button>
+          <button class="param-btn active" data-sim="traction" data-key="section" data-val="moyenne" onclick="onParamClick(this)">Moyenne</button>
+          <button class="param-btn" data-sim="traction" data-key="section" data-val="epaisse" onclick="onParamClick(this)">Épaisse</button>
+        </div>
+      </div>
+      <div class="param-group">
+        <span class="param-label">Longueur</span>
+        <div class="param-row">
+          <button class="param-btn" data-sim="traction" data-key="longueur" data-val="courte" onclick="onParamClick(this)">Courte</button>
+          <button class="param-btn active" data-sim="traction" data-key="longueur" data-val="moyenne" onclick="onParamClick(this)">Moyenne</button>
+          <button class="param-btn" data-sim="traction" data-key="longueur" data-val="longue" onclick="onParamClick(this)">Longue</button>
+        </div>
+      </div>
+    </div>
+    
+    <div id="stage-traction" class="stage-3d">
+      <div id="status-traction" class="overlay-status">Élastique</div>
+      <div class="overlay-hint">🔄 Tournez avec la souris</div>
+      <div id="bubble-traction" class="rupture-bubble"></div>
+    </div>
+
+    <div class="controls">
+      <label id="label-slider-trac">Force axiale (N)</label>
+      <div class="slider-row">
+        <div class="slider-wrapper">
+          <input type="range" id="slider-traction" min="0" max="20" step="0.1" value="0" oninput="onForceInput('traction', this.value)">
+          <div class="slider-ticks" id="ticks-traction"></div>
+        </div>
+        <button class="reset-btn" onclick="resetForce('traction')">↺ Réinitialiser</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+/* ========================================================
+   0. MOTEUR SONORE (WEB AUDIO API)
+======================================================== */
+let audioCtx = null;
+
+function initAudio() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+}
+
+function playRuptureSound() {
+  initAudio();
+  if(!audioCtx) return;
+  const time = audioCtx.currentTime;
+  
+  // Bruit de cassure (bruit blanc filtré)
+  const bufferSize = audioCtx.sampleRate * 0.3;
+  const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) {
+    data[i] = Math.random() * 2 - 1;
+  }
+  const noise = audioCtx.createBufferSource();
+  noise.buffer = buffer;
+  
+  const noiseFilter = audioCtx.createBiquadFilter();
+  noiseFilter.type = 'highpass';
+  noiseFilter.frequency.value = 800;
+  
+  const noiseGain = audioCtx.createGain();
+  noiseGain.gain.setValueAtTime(0.8, time);
+  noiseGain.gain.exponentialRampToValueAtTime(0.01, time + 0.15);
+  
+  noise.connect(noiseFilter);
+  noiseFilter.connect(noiseGain);
+  noiseGain.connect(audioCtx.destination);
+  noise.start(time);
+  
+  // Onde de choc (impact grave)
+  const osc = audioCtx.createOscillator();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(150, time);
+  osc.frequency.exponentialRampToValueAtTime(30, time + 0.2);
+  
+  const oscGain = audioCtx.createGain();
+  oscGain.gain.setValueAtTime(1, time);
+  oscGain.gain.exponentialRampToValueAtTime(0.01, time + 0.2);
+  
+  osc.connect(oscGain);
+  oscGain.connect(audioCtx.destination);
+  osc.start(time);
+  osc.stop(time + 0.2);
+}
+
+/* ========================================================
+   1. PARAMÉTRAGE PHYSIQUE & CONSTANTES
+======================================================== */
+const MATERIALS = {
+  acier: { label:'Acier', resist:1.8, color:0xa8b5c2, metalness:0.65, roughness:0.35 }, 
+  alu:   { label:'Aluminium', resist:1.3, color:0xdfebf5, metalness:0.45, roughness:0.25 },
+  bois:  { label:'Bois', resist:0.9, color:0x8d6e63, metalness:0.0, roughness:0.9 },
+  pla:   { label:'PLA', resist:0.55, color:0xff7043, metalness:0.1, roughness:0.4 }
+};
+
+const SECTIONS = {
+  fine:    { resist:0.6, s:0.65 },
+  moyenne: { resist:1.0, s:1.0 },
+  epaisse: { resist:1.6, s:1.4 }
+};
+
+const LONGUEURS = {
+  courte:  { loadEffect:0.75, l:0.75 },
+  moyenne: { loadEffect:1.0,  l:1.0 },
+  longue:  { loadEffect:1.35, l:1.25 }
+};
+
+const PARAMS = {
+  torsion:      { material:'acier', section:'moyenne', longueur:'moyenne', force:0, wasBroken:false },
+  flexion:      { material:'acier', section:'moyenne', longueur:'moyenne', pointForce:'centre', force:0, wasBroken:false },
+  cisaillement: { material:'acier', section:'moyenne', longueur:'moyenne', force:0, wasBroken:false },
+  traction:     { mode:'traction', material:'acier', section:'moyenne', longueur:'moyenne', force:0, wasBroken:false }
+};
+
+let currentTab = 'torsion';
+let demoInterval = null;
+
+// Générateur de bruit pseudo-aléatoire pour les textures de rupture
+const hash = (x, y, z) => (Math.sin(x * 12.9898 + y * 78.233 + z * 37.719) * 43758.5453) % 1;
+
+/* ========================================================
+   2. LOGIQUE DU SIMULATEUR ET UI
+======================================================== */
+function getMaxForce(sim) {
+  const p = PARAMS[sim];
+  const mat = MATERIALS[p.material], sec = SECTIONS[p.section], lon = LONGUEURS[p.longueur];
+  let multiplier = lon.loadEffect;
+  
+  if(sim === 'flexion' && p.pointForce !== 'centre') multiplier *= 0.85;
+  if(sim === 'traction' && p.mode === 'compression') multiplier *= 1.35;
+  
+  const ruptureForce = (0.85 * 20 * mat.resist * sec.resist) / multiplier;
+  let maxVal = Math.ceil(ruptureForce * 1.25 / 10) * 10;
+  if (maxVal < 10) maxVal = 10; 
+  return { max: maxVal, rupture: ruptureForce };
+}
+
+function updateSliderScale(sim) {
+  const info = getMaxForce(sim);
+  const slider = document.getElementById('slider-' + sim);
+  if(!slider) return;
+  
+  slider.max = info.max;
+  if(Number(slider.value) > info.max) {
+     slider.value = info.max;
+     PARAMS[sim].force = info.max;
+  }
+  
+  const ticksContainer = document.getElementById('ticks-' + sim);
+  if(ticksContainer) {
+     const m = info.max;
+     ticksContainer.innerHTML = `<span>0</span><span>${m/4}</span><span>${m/2}</span><span>${m*0.75}</span><span>${m}</span>`;
+  }
+}
+
+function effectiveLoad(sim) {
+  const p = PARAMS[sim];
+  const mat = MATERIALS[p.material], sec = SECTIONS[p.section], lon = LONGUEURS[p.longueur];
+  let multiplier = lon.loadEffect;
+  
+  if(sim === 'flexion' && p.pointForce !== 'centre') multiplier *= 0.85;
+  if(sim === 'traction' && p.mode === 'compression') multiplier *= 1.35;
+  
+  return (p.force/20) * multiplier / (mat.resist * sec.resist);
+}
+
+function updateStatusUI(sim, load) {
+  const badge = document.getElementById('status-'+sim);
+  if(load < 0.55) { 
+    badge.textContent = "Élastique"; 
+    badge.style.background = "var(--vert)"; 
+  } else if(load < 0.85) { 
+    badge.textContent = "Déformation plastique"; 
+    badge.style.background = "var(--orange)"; 
+  } else { 
+    badge.textContent = "⚠️ Rupture !"; 
+    badge.style.background = "var(--rouge)"; 
+  }
+}
+
+function switchTab(name) {
+  initAudio();
+  if(demoInterval) clearInterval(demoInterval);
+  currentTab = name;
+  
+  ['torsion','flexion','cisaillement','traction'].forEach(n => {
+    document.getElementById('panel-'+n).classList.toggle('active', n === name);
+    document.getElementById('tab-btn-'+n).classList.toggle('active', n === name);
+  });
+  
+  updateSliderScale(name);
+  mountRendererTo(name);
+  rebuildMeshes(name);
+  applyDeformation(name);
+}
+
+function onParamClick(btn) {
+  initAudio();
+  if(demoInterval) clearInterval(demoInterval);
+  
+  const sim = btn.dataset.sim, key = btn.dataset.key, val = btn.dataset.val;
+  PARAMS[sim][key] = val;
+  
+  document.querySelectorAll(`.param-btn[data-sim="${sim}"][data-key="${key}"]`).forEach(b => {
+    b.classList.toggle('active', b === btn);
+  });
+  
+  if(sim === 'traction' && key === 'mode') {
+    document.getElementById('label-slider-trac').textContent = val === 'traction' ? 'Intensité (Traction)' : 'Intensité (Compression)';
+  }
+  
+  updateSliderScale(sim);
+  rebuildMeshes(sim);
+  applyDeformation(sim);
+}
+
+function onForceInput(sim, val) {
+  initAudio();
+  if(demoInterval) clearInterval(demoInterval);
+  PARAMS[sim].force = Number(val);
+  applyDeformation(sim);
+}
+
+function resetForce(sim) {
+  initAudio();
+  if(demoInterval) clearInterval(demoInterval);
+  PARAMS[sim].force = 0;
+  PARAMS[sim].wasBroken = false;
+  document.getElementById('slider-'+sim).value = 0;
+  applyDeformation(sim);
+}
+
+function playAutoDemo(sim) {
+  initAudio();
+  if(demoInterval) clearInterval(demoInterval);
+  
+  let force = 0, dir = 1, phase = (sim === 'traction') ? 'traction' : 'single';
+  
+  if(sim === 'traction') {
+    PARAMS.traction.mode = 'traction';
+    document.querySelectorAll('[data-sim="traction"][data-key="mode"]').forEach(b => {
+      b.classList.toggle('active', b.dataset.val === 'traction');
+    });
+    updateSliderScale(sim);
+    rebuildMeshes(sim);
+  }
+
+  demoInterval = setInterval(() => {
+    const info = getMaxForce(sim);
+    const targetForce = info.rupture * 1.15; // Dépasse le seuil pour forcer la rupture
+    const increment = targetForce / 40; 
+    
+    force += increment * dir;
+    if (force >= targetForce) { force = targetForce; dir = -1; }
+    
+    if (force <= 0 && dir === -1) {
+      if (sim === 'traction' && phase === 'traction') {
+        phase = 'compression'; 
+        dir = 1; 
+        PARAMS.traction.mode = 'compression';
+        document.querySelectorAll('[data-sim="traction"][data-key="mode"]').forEach(b => {
+          b.classList.toggle('active', b.dataset.val === 'compression');
+        });
+        resetForce(sim);
+        updateSliderScale(sim);
+        rebuildMeshes(sim);
+      } else {
+        clearInterval(demoInterval); 
+        resetForce(sim); 
+        return;
+      }
+    }
+    document.getElementById('slider-'+sim).value = force;
+    PARAMS[sim].force = force;
+    applyDeformation(sim);
+  }, 40);
+}
+
+/* ========================================================
+   3. MOTEUR THREE.JS (Initialisation et Éclairage)
+======================================================== */
+const scene = new THREE.Scene();
+scene.background = null; 
+
+const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 1000);
+camera.position.set(0, 15, 45);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputEncoding = THREE.sRGBEncoding;
+
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.05;
+controls.maxPolarAngle = Math.PI / 2 + 0.1; 
+
+// Éclairage de type Studio pour bien faire ressortir les matériaux métalliques
+const hemiLight = new THREE.HemisphereLight(0xffffff, 0x8d99ae, 0.9);
+scene.add(hemiLight);
+
+const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+dirLight.position.set(20, 30, 20);
+dirLight.castShadow = true;
+dirLight.shadow.camera.left = -30;
+dirLight.shadow.camera.right = 30;
+dirLight.shadow.camera.top = 20;
+dirLight.shadow.camera.bottom = -20;
+dirLight.shadow.bias = -0.001;
+scene.add(dirLight);
+
+const backLight = new THREE.DirectionalLight(0xe6f2ff, 0.5);
+backLight.position.set(-20, 15, -20);
+scene.add(backLight);
+
+const ground = new THREE.Mesh(
+  new THREE.PlaneGeometry(200, 200),
+  new THREE.ShadowMaterial({ opacity: 0.15 })
+);
+ground.rotation.x = -Math.PI / 2;
+ground.position.y = -10;
+ground.receiveShadow = true;
+scene.add(ground);
+
+// Conteneurs de chaque onglet 3D
+const groups = {
+  torsion: new THREE.Group(),
+  flexion: new THREE.Group(),
+  cisaillement: new THREE.Group(),
+  traction: new THREE.Group()
+};
+for(let k in groups) { scene.add(groups[k]); }
+
+function mountRendererTo(sim) {
+  const container = document.getElementById('stage-' + sim);
+  if(!container) return;
+  container.insertBefore(renderer.domElement, container.firstChild);
+  const w = container.clientWidth, h = container.clientHeight;
+  renderer.setSize(w, h);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+  Object.keys(groups).forEach(k => groups[k].visible = (k === sim));
+  controls.target.set(0, 0, 0);
+  controls.update();
+}
+window.addEventListener('resize', () => mountRendererTo(currentTab));
+
+function getMat(sim) {
+  const def = MATERIALS[PARAMS[sim].material];
+  return new THREE.MeshStandardMaterial({
+    color: def.color, 
+    roughness: def.roughness, 
+    metalness: def.metalness
+  });
+}
+
+function saveOriginalVertices(geometry) {
+  geometry.userData.origPositions = new Float32Array(geometry.attributes.position.array);
+}
+
+function createForceArrow(color = 0xc62828) {
+  const grp = new THREE.Group();
+  const mat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.4, metalness: 0.2 });
+  
+  const headGeo = new THREE.ConeGeometry(1.5, 3, 16);
+  headGeo.rotateX(Math.PI); // Pointe vers le bas
+  headGeo.translate(0, 1.5, 0); 
+  const head = new THREE.Mesh(headGeo, mat);
+  head.castShadow = true;
+  
+  const shaftGeo = new THREE.CylinderGeometry(0.5, 0.5, 6, 12);
+  shaftGeo.translate(0, 6, 0); // Posé sur le cône
+  const shaft = new THREE.Mesh(shaftGeo, mat);
+  shaft.castShadow = true;
+  
+  grp.add(shaft, head);
+  return grp;
+}
+
+/* ========================================================
+   4. CONSTRUCTION DES GÉOMÉTRIES 3D
+======================================================== */
+const meshes = {}; 
+
+function rebuildMeshes(sim) {
+  const group = groups[sim];
+  while(group.children.length > 0){
+    const obj = group.children[0];
+    if(obj.geometry) obj.geometry.dispose();
+    if(obj.material) obj.material.dispose();
+    group.remove(obj);
+  }
+  
+  const p = PARAMS[sim];
+  p.wasBroken = false; 
+  const bubble = document.getElementById('bubble-' + sim);
+  if(bubble) bubble.classList.remove('show');
+  
+  const sec = SECTIONS[p.section].s;
+  const L = 20 * LONGUEURS[p.longueur].l;
+  const material = getMat(sim);
+
+  if (sim === 'torsion') {
+    const r = 2 * sec;
+    
+    // Pour ne pas "étirer" la matière, l'objet est construit en 2 parties
+    const geoL = new THREE.CylinderGeometry(r, r, L/2, 32, 16);
+    geoL.rotateZ(Math.PI/2); 
+    geoL.translate(L/4, 0, 0);
+    saveOriginalVertices(geoL);
+    meshes.torsionL = new THREE.Mesh(geoL, material); 
+    meshes.torsionL.castShadow = true;
+
+    const geoR = new THREE.CylinderGeometry(r, r, L/2, 32, 16);
+    geoR.rotateZ(Math.PI/2); 
+    geoR.translate(L*0.75, 0, 0);
+    saveOriginalVertices(geoR);
+    meshes.torsionR = new THREE.Mesh(geoR, material); 
+    meshes.torsionR.castShadow = true;
+    
+    const wall = new THREE.Mesh(new THREE.BoxGeometry(4, 16, 16), new THREE.MeshStandardMaterial({color:0x455a64}));
+    wall.position.x = -2; wall.castShadow = true;
+    
+    meshes.torsionLever = new THREE.Mesh(new THREE.BoxGeometry(1.5, r*4, 1.5), new THREE.MeshStandardMaterial({color:0xffca28}));
+    meshes.torsionLever.position.x = L; 
+    meshes.torsionLever.castShadow = true;
+
+    group.add(wall, meshes.torsionL, meshes.torsionR, meshes.torsionLever);
+    camera.position.set(L/2, 10, 30);
+    controls.target.set(L/2, 0, 0);
+  }
+
+  else if (sim === 'flexion') {
+    const h = 2 * sec, d = 3 * sec;
+    let forceX = 0;
+    if(p.pointForce === 'gauche') forceX = -L/4;
+    if(p.pointForce === 'droite') forceX = L/4;
+
+    const lenL = forceX - (-L/2);
+    const lenR = L/2 - forceX;
+
+    const realGeoL = new THREE.BoxGeometry(lenL, h, d, Math.max(4, Math.floor(lenL)), 4, 1);
+    realGeoL.translate(-L/2 + lenL/2, 0, 0);
+    saveOriginalVertices(realGeoL);
+    meshes.flexL = new THREE.Mesh(realGeoL, material); 
+    meshes.flexL.castShadow = true;
+
+    const realGeoR = new THREE.BoxGeometry(lenR, h, d, Math.max(4, Math.floor(lenR)), 4, 1);
+    realGeoR.translate(forceX + lenR/2, 0, 0);
+    saveOriginalVertices(realGeoR);
+    meshes.flexR = new THREE.Mesh(realGeoR, material); 
+    meshes.flexR.castShadow = true;
+
+    const supGeo = new THREE.ConeGeometry(2, 4, 4);
+    const supMat = new THREE.MeshStandardMaterial({color:0x455a64});
+    
+    const supL = new THREE.Mesh(supGeo, supMat);
+    supL.position.set(-L/2, -h/2 - 2, 0); 
+    supL.castShadow = true;
+    
+    const supR = new THREE.Mesh(supGeo, supMat);
+    supR.position.set(L/2, -h/2 - 2, 0); 
+    supR.castShadow = true;
+
+    meshes.flexArrow = createForceArrow();
+    group.add(meshes.flexL, meshes.flexR, supL, supR, meshes.flexArrow);
+    camera.position.set(0, 10, 35);
+  }
+
+  else if (sim === 'cisaillement') {
+    const hBox = 4 * sec, dBox = 6 * sec, lBox = 16 * LONGUEURS[p.longueur].l;
+    const geo = new THREE.BoxGeometry(lBox, hBox, dBox);
+    const matBot = getMat(sim); 
+    const matTop = getMat(sim); matTop.color.multiplyScalar(0.9); // Top slightly darker
+
+    meshes.cisBot = new THREE.Mesh(geo, matBot);
+    meshes.cisBot.position.set(0, -hBox/2, 0); 
+    meshes.cisBot.castShadow = true; 
+    meshes.cisBot.receiveShadow = true;
+    
+    meshes.cisTop = new THREE.Mesh(geo, matTop);
+    meshes.cisTop.position.set(0, hBox/2, 0); 
+    meshes.cisTop.castShadow = true; 
+    meshes.cisTop.receiveShadow = true;
+
+    meshes.cisArrT = createForceArrow(); 
+    meshes.cisArrB = createForceArrow(); 
+
+    group.add(meshes.cisBot, meshes.cisTop, meshes.cisArrT, meshes.cisArrB);
+    camera.position.set(0, 10, 35);
+  }
+
+  else if (sim === 'traction') {
+    const h = 2 * sec, d = 2 * sec;
+    
+    const geoL = new THREE.BoxGeometry(L/2, h, d, 32, 2, 2);
+    geoL.translate(L/4, 0, 0); 
+    saveOriginalVertices(geoL);
+    meshes.tracL = new THREE.Mesh(geoL, material); 
+    meshes.tracL.castShadow = true;
+
+    const geoR = new THREE.BoxGeometry(L/2, h, d, 32, 2, 2);
+    geoR.translate(L*0.75, 0, 0);
+    saveOriginalVertices(geoR);
+    meshes.tracR = new THREE.Mesh(geoR, material); 
+    meshes.tracR.castShadow = true;
+
+    const wall = new THREE.Mesh(new THREE.BoxGeometry(4, 16, 16), new THREE.MeshStandardMaterial({color:0x455a64}));
+    wall.position.x = -2; wall.castShadow = true;
+
+    meshes.tracGrip = new THREE.Mesh(new THREE.BoxGeometry(2, 6, 6), new THREE.MeshStandardMaterial({color:0x37474f}));
+    meshes.tracArrow = createForceArrow();
+
+    group.add(wall, meshes.tracL, meshes.tracR, meshes.tracGrip, meshes.tracArrow);
+    camera.position.set(L/2, 10, 35);
+    controls.target.set(L/2, 0, 0);
+  }
+}
+
+/* ========================================================
+   5. ALGORITHMES DE DÉFORMATION
+======================================================== */
+function applyDeformation(sim) {
+  const load = effectiveLoad(sim);
+  const visualRatio = Math.min(load, 1.3);
+  const co = Math.min(1, Math.max(0, (load-0.85)/0.3)); // Coefficient de rupture (0 à 1)
+  const p = PARAMS[sim];
+  const L = 20 * LONGUEURS[p.longueur].l;
+  const isBroken = co > 0;
+  const bubble = document.getElementById('bubble-' + sim);
+
+  updateStatusUI(sim, load);
+
+  // Déclenchement du son et de la bulle d'info au moment critique
+  if (isBroken && !p.wasBroken) {
+    playRuptureSound();
+    p.wasBroken = true;
+    if(bubble) {
+      const info = getMaxForce(sim);
+      bubble.innerHTML = `💥 Rupture à ${info.rupture.toFixed(1)} N`;
+      bubble.classList.add('show');
+    }
+  } else if (!isBroken) {
+    p.wasBroken = false;
+    if(bubble) bubble.classList.remove('show');
+  }
+
+  if (sim === 'torsion') {
+    const totalTwist = visualRatio * Math.PI * 1.5;
+    
+    const deformTorsion = (mesh, isRight) => {
+      const geo = mesh.geometry, pos = geo.attributes.position, orig = geo.userData.origPositions;
+      for(let i=0; i<pos.count; i++) {
+        let x = orig[i*3], y = orig[i*3+1], z = orig[i*3+2];
+        let angle = (x/L) * totalTwist;
+        let nx = x;
+        // Bruit procédural pour la surface cassée
+        if (isBroken && Math.abs(x - L/2) < 0.5) {
+          nx += (isRight ? 1 : -1) * Math.abs(hash(x,y,z)) * 1.2;
         }
+        let ny = y * Math.cos(angle) - z * Math.sin(angle);
+        let nz = y * Math.sin(angle) + z * Math.cos(angle);
+        pos.setXYZ(i, nx, ny, nz);
+      }
+      pos.needsUpdate = true; geo.computeVertexNormals();
+    };
 
-        function updateForceMax() {
-            let maxVal = parseFloat(document.getElementById('force-max').value);
-            if (isNaN(maxVal) || maxVal <= 0) maxVal = 1000;
-            
-            ['C', 'E', 'F', 'D', 'AB'].forEach(id => {
-                const slider = document.getElementById(`val-force-${id}`);
-                slider.max = maxVal;
-                
-                let newStep = maxVal / 100;
-                if (newStep < 0.1) newStep = 0.1;
-                slider.step = newStep;
+    deformTorsion(meshes.torsionL, false);
+    deformTorsion(meshes.torsionR, true);
 
-                if (parseFloat(slider.value) > maxVal) {
-                    slider.value = maxVal;
-                    document.getElementById(`text-force-${id}`).innerText = parseFloat(maxVal).toFixed(0);
-                }
-            });
-            updateSimulation();
+    meshes.torsionR.position.x = isBroken ? co * 4 : 0;
+    meshes.torsionR.position.y = isBroken ? -co * 1.5 : 0;
+    meshes.torsionLever.rotation.x = totalTwist;
+    meshes.torsionLever.position.x = L + (isBroken ? co * 4 : 0);
+    meshes.torsionLever.position.y = isBroken ? -co * 1.5 : 0;
+  }
+
+  else if (sim === 'flexion') {
+    const maxDef = 8 * visualRatio;
+    let forceX = 0;
+    if(p.pointForce === 'gauche') forceX = -L/4;
+    if(p.pointForce === 'droite') forceX = L/4;
+    const hBox = 2 * SECTIONS[p.section].s;
+
+    const deformFlexion = (mesh, isRight) => {
+      const geo = mesh.geometry, pos = geo.attributes.position, orig = geo.userData.origPositions;
+      for(let i=0; i<pos.count; i++) {
+        let x = orig[i*3], y = orig[i*3+1], z = orig[i*3+2], defY = 0;
+        
+        if(x <= forceX) defY = -maxDef * Math.sin(((x - (-L/2)) / (forceX - (-L/2))) * Math.PI/2);
+        else defY = -maxDef * Math.sin(((L/2 - x) / (L/2 - forceX)) * Math.PI/2);
+        
+        let nx = x;
+        if(isBroken && Math.abs(x - forceX) < 0.5) {
+          let tearGap = co * 3, fiberFactor = (y + hBox/2) / hBox;
+          nx += (isRight ? 1 : -1) * (tearGap * (1.2 - fiberFactor) + Math.abs(hash(x,y,z)));
         }
+        pos.setXYZ(i, nx, y + defY, z);
+      }
+      pos.needsUpdate = true; geo.computeVertexNormals();
+    };
 
-        function setLevel(level) {
-            currentLevel = level;
-            
-            const btns = document.querySelectorAll('.level-btn');
-            btns.forEach(btn => btn.classList.remove('active'));
-            if (level === 5) btns[0].classList.add('active');
-            if (level === 4) btns[1].classList.add('active');
-            if (level === 3) btns[2].classList.add('active');
+    deformFlexion(meshes.flexL, false);
+    deformFlexion(meshes.flexR, true);
 
-            document.querySelectorAll('.lvl-4, .lvl-3').forEach(el => el.classList.add('hidden'));
-            document.getElementById('res-lvl3').classList.add('hidden');
+    if (isBroken) {
+      meshes.flexL.position.y = -co * 5; meshes.flexL.rotation.z = -co * 0.15;
+      meshes.flexR.position.y = -co * 5; meshes.flexR.rotation.z = co * 0.15;
+    } else {
+      meshes.flexL.position.y = 0; meshes.flexL.rotation.z = 0;
+      meshes.flexR.position.y = 0; meshes.flexR.rotation.z = 0;
+    }
 
-            if (level <= 4) document.querySelectorAll('.lvl-4').forEach(el => el.classList.remove('hidden'));
-            if (level === 3) {
-                document.querySelectorAll('.lvl-3').forEach(el => el.classList.remove('hidden'));
-                document.getElementById('res-lvl3').classList.remove('hidden');
-            }
+    let arrowY = (hBox/2) - maxDef;
+    if (isBroken) arrowY -= co * 5;
+    meshes.flexArrow.position.set(forceX, arrowY, 0);
+    meshes.flexArrow.rotation.set(0, 0, 0);
+  }
 
-            if(level > 3) {
-                ['C', 'E', 'F', 'D', 'AB'].forEach(id => {
-                    document.getElementById(`val-force-${id}`).value = 150; 
-                });
-            }
+  else if (sim === 'cisaillement') {
+    const shift = 6 * visualRatio, hBox = 4 * SECTIONS[p.section].s, lBox = 16 * LONGUEURS[p.longueur].l;
+    
+    if (isBroken) {
+      meshes.cisTop.position.x = shift + co * 6;
+      meshes.cisTop.position.y = hBox/2 - co * 12;
+      meshes.cisTop.rotation.z = -co * 0.4;
+      meshes.cisTop.rotation.x = co * 0.2;
+      meshes.cisBot.position.x = -shift - co * 2;
+    } else {
+      meshes.cisTop.position.x = shift;
+      meshes.cisTop.position.y = hBox/2;
+      meshes.cisTop.rotation.z = 0;
+      meshes.cisTop.rotation.x = 0;
+      meshes.cisBot.position.x = -shift;
+    }
+    
+    meshes.cisArrT.rotation.z = Math.PI/2;
+    meshes.cisArrT.position.set(meshes.cisTop.position.x - lBox/2, meshes.cisTop.position.y, 0);
+    
+    meshes.cisArrB.rotation.z = -Math.PI/2;
+    meshes.cisArrB.position.set(meshes.cisBot.position.x + lBox/2, meshes.cisBot.position.y, 0);
+  }
 
-            updateSimulation();
+  else if (sim === 'traction') {
+    const isTrac = p.mode === 'traction';
+    let deltaL = isTrac ? 10 * visualRatio : -5 * visualRatio;
+
+    const deformTraction = (mesh, isRight) => {
+      const geo = mesh.geometry, pos = geo.attributes.position, orig = geo.userData.origPositions;
+      for(let i=0; i<pos.count; i++) {
+        let x = orig[i*3], y = orig[i*3+1], z = orig[i*3+2], t = x/L, nx = x + t * deltaL, ny = y, nz = z;
+        
+        if (isTrac) {
+          let neck = 1 - (0.4 * Math.min(visualRatio, 1.2) * Math.sin(t * Math.PI));
+          ny *= neck; nz *= neck;
+          if (isBroken && Math.abs(x - L/2) < 0.5) nx += (isRight ? 1 : -1) * Math.abs(hash(x,y,z)) * 1.5;
+        } else {
+          let buckle = (LONGUEURS[p.longueur].l >= 1.0) ? 8 * visualRatio : 2 * visualRatio;
+          ny += buckle * Math.sin(t * Math.PI);
+          let bulge = 1 + (0.2 * visualRatio * Math.sin(t * Math.PI));
+          nz *= bulge;
+          if (isBroken && Math.abs(x - L/2) < 0.5) ny -= Math.abs(hash(x,y,z)) * 2;
         }
+        pos.setXYZ(i, nx, ny, nz);
+      }
+      pos.needsUpdate = true; geo.computeVertexNormals();
+    };
 
-        function updateSimulation(sourceElement) {
-            if (sourceElement && sourceElement.id.startsWith('val-force-')) {
-                const id = sourceElement.id.replace('val-force-', '');
-                document.getElementById(`text-force-${id}`).innerText = parseFloat(sourceElement.value).toFixed(0);
-            }
+    deformTraction(meshes.tracL, false);
+    deformTraction(meshes.tracR, true);
 
-            const inputEntrait = parseFloat(document.getElementById('dim-entrait').value) || 1;
-            const inputArba = parseFloat(document.getElementById('dim-arba').value) || 1;
-            
-            let valPoincon = 0;
-            let valContrefiche = 0;
-            let isValidGeo = false;
+    const endX = L + deltaL;
+    if (isTrac) {
+      if (isBroken) {
+        meshes.tracR.position.set(co * 6, 0, 0); meshes.tracR.rotation.z = 0;
+        meshes.tracGrip.position.set(endX + co * 6, 0, 0);
+      } else {
+        meshes.tracR.position.set(0, 0, 0); meshes.tracR.rotation.z = 0;
+        meshes.tracGrip.position.set(endX, 0, 0);
+      }
+      meshes.tracGrip.rotation.z = 0;
+      meshes.tracArrow.rotation.z = Math.PI/2;
+      meshes.tracArrow.position.set(meshes.tracGrip.position.x + 1, 0, 0);
+    } else {
+      if (isBroken) {
+        meshes.tracL.position.y = -co * 8; meshes.tracL.rotation.z = -co * 0.2;
+        meshes.tracR.position.y = -co * 8; meshes.tracR.rotation.z = co * 0.2;
+        meshes.tracGrip.position.set(endX, -co * 8, 0);
+        meshes.tracGrip.rotation.z = co * 0.2;
+      } else {
+        meshes.tracL.position.y = 0; meshes.tracL.rotation.z = 0;
+        meshes.tracR.position.y = 0; meshes.tracR.rotation.z = 0;
+        meshes.tracGrip.position.set(endX, 0, 0);
+        meshes.tracGrip.rotation.z = 0;
+      }
+      let rot = meshes.tracGrip.rotation.z;
+      let dx = Math.cos(rot) * 1;
+      let dy = Math.sin(rot) * 1;
+      meshes.tracArrow.rotation.z = -Math.PI/2 + rot;
+      meshes.tracArrow.position.set(meshes.tracGrip.position.x + dx, meshes.tracGrip.position.y + dy, 0);
+    }
+  }
+}
 
-            if (inputArba > inputEntrait / 2) {
-                isValidGeo = true;
-                valPoincon = Math.sqrt(Math.pow(inputArba, 2) - Math.pow(inputEntrait / 2, 2));
-                valContrefiche = inputArba / 2; 
-                
-                document.getElementById('val-poincon').innerText = valPoincon.toFixed(1);
-                document.getElementById('val-contrefiche').innerText = valContrefiche.toFixed(1);
-                document.getElementById('dim-error').classList.add('hidden');
-            } else {
-                document.getElementById('dim-error').classList.remove('hidden');
-                document.getElementById('val-poincon').innerText = "-";
-                document.getElementById('val-contrefiche').innerText = "-";
-            }
+/* ========================================================
+   6. BOUCLE D'ANIMATION
+======================================================== */
+function animate() {
+  requestAnimationFrame(animate);
+  controls.update();
+  renderer.render(scene, camera);
+}
 
-            const hasPoincon = document.getElementById('struct-poincon').checked;
-            const hasContreficheG = document.getElementById('struct-contrefiche-g').checked;
-            const hasContreficheD = document.getElementById('struct-contrefiche-d').checked;
+// Initialisation globale
+updateSliderScale('torsion');
+updateSliderScale('flexion');
+updateSliderScale('cisaillement');
+updateSliderScale('traction');
+switchTab('torsion');
+animate();
 
-            ['C', 'E', 'F', 'D', 'AB'].forEach(id => {
-                const cb = document.getElementById(`force-${id}`).checked;
-                const sliderDiv = document.getElementById(`slider-${id}`);
-                if (cb && currentLevel === 3) {
-                    sliderDiv.classList.remove('hidden');
-                    document.getElementById(`text-force-${id}`).innerText = parseFloat(document.getElementById(`val-force-${id}`).value).toFixed(0);
-                } else {
-                    sliderDiv.classList.add('hidden');
-                }
-            });
-
-            const fC = document.getElementById('force-C').checked ? (currentLevel === 3 ? parseFloat(document.getElementById('val-force-C').value) : 150) : 0;
-            const fE = document.getElementById('force-E').checked ? (currentLevel === 3 ? parseFloat(document.getElementById('val-force-E').value) : 150) : 0;
-            const fF = document.getElementById('force-F').checked ? (currentLevel === 3 ? parseFloat(document.getElementById('val-force-F').value) : 150) : 0;
-            const fD = document.getElementById('force-D').checked ? (currentLevel === 3 ? parseFloat(document.getElementById('val-force-D').value) : 150) : 0;
-            const fAB = document.getElementById('force-AB').checked ? (currentLevel === 3 ? parseFloat(document.getElementById('val-force-AB').value) : 150) : 0;
-            
-            const forceTotale = fC + fE + fF + fD + fAB;
-
-            let facteurRigidite = 1.0;
-            let missingContrefiches = 0;
-            if (!hasContreficheG) missingContrefiches++;
-            if (!hasContreficheD) missingContrefiches++;
-            
-            if (missingContrefiches === 1) facteurRigidite *= 1.5;
-            if (missingContrefiches === 2) facteurRigidite *= 2.0; 
-            if (!hasPoincon) facteurRigidite *= 1.5;
-
-            let matKey = document.getElementById('materiau').value;
-            const mat = materiaux[matKey];
-            
-            document.getElementById('material-info').innerHTML = `
-                <strong>Propriétés physiques :</strong> Module de Young = ${mat.moduleYoung} MPa | Limite élastique = ${mat.limiteElastique} MPa<br>
-                <strong>Données environnementales :</strong> Empreinte carbone = ${mat.carbone} | Recyclabilité = ${mat.recyclabilite}
-            `;
-
-            let section = 100;
-            if (currentLevel <= 4) {
-                const forme = document.getElementById('section-forme').value;
-                const divCarree = document.getElementById('inputs-carree');
-                const divRect = document.getElementById('inputs-rect');
-
-                if (forme === 'carree') {
-                    divCarree.style.display = 'flex';
-                    divRect.style.display = 'none';
-                    const a = parseFloat(document.getElementById('dim-a').value) || 0;
-                    section = a * a;
-                } else {
-                    divCarree.style.display = 'none';
-                    divRect.style.display = 'flex';
-                    const b = parseFloat(document.getElementById('dim-b').value) || 0;
-                    const h = parseFloat(document.getElementById('dim-h').value) || 0;
-                    section = b * h;
-                }
-                document.getElementById('section-val').innerText = section.toFixed(1);
-            }
-
-            const longueurUtilisee = isValidGeo ? inputEntrait : 1; 
-            
-            let deformation = 0;
-            let contrainte = 0;
-            let tauxTravail = 0;
-
-            if (isValidGeo) {
-                if (section === 0) {
-                    if (forceTotale > 0) {
-                        deformation = Infinity;
-                        tauxTravail = Infinity;
-                    }
-                } else {
-                    deformation = ((forceTotale * longueurUtilisee) / (mat.moduleYoung * section)) * facteurRigidite;
-                    contrainte = (forceTotale / section) * facteurRigidite;
-                    tauxTravail = (contrainte / mat.limiteElastique) * 100;
-                }
-            }
-
-            document.getElementById('res-deformation').innerText = (section === 0 && forceTotale > 0) ? "∞" : deformation.toFixed(2);
-            
-            if (currentLevel === 3) {
-                document.getElementById('res-taux').innerText = (section === 0 && forceTotale > 0) ? "∞" : tauxTravail.toFixed(1);
-                
-                const alerte = document.getElementById('alerte-rupture');
-                if (tauxTravail > 100 || (section === 0 && forceTotale > 0)) {
-                    alerte.classList.remove('hidden');
-                    if (section === 0) {
-                        alerte.innerText = "⚠️ RUPTURE : Section nulle ! La structure n'existe pas.";
-                    } else {
-                        alerte.innerText = "⚠️ RUPTURE : Limite d'élasticité dépassée ou structure trop faible !";
-                    }
-                } else {
-                    alerte.classList.add('hidden');
-                }
-
-                const mesureExp = parseFloat(document.getElementById('mesure-exp').value);
-                const ecartEl = document.getElementById('res-ecart');
-                if (!isNaN(mesureExp) && section !== 0 && isValidGeo) {
-                    ecartEl.innerText = `${Math.abs(mesureExp - deformation).toFixed(2)} mm de différence`;
-                } else {
-                    ecartEl.innerText = "En attente de saisie valide...";
-                }
-                targetStressRate = tauxTravail;
-            } else {
-                targetStressRate = 0; 
-            }
-
-            if (!isValidGeo || forceTotale === 0) {
-                targetDef = 0;
-            } else if (section === 0 && forceTotale > 0) {
-                targetDef = 220; 
-            } else {
-                const forceMaxRef = parseFloat(document.getElementById('force-max').value) || 1000;
-                let defBase = ((forceMaxRef * 0.15 * longueurUtilisee) / (mat.moduleYoung * (section === 0 ? 1 : section))) * facteurRigidite;
-                const ratioForce = forceTotale / (forceMaxRef * 5); 
-                targetDef = Math.min(defBase * 400 * ratioForce, 150); 
-                if (tauxTravail > 100 && currentLevel === 3) targetDef = 220; 
-            }
-        }
-
-        function animate() {
-            currentDef += (targetDef - currentDef) * 0.08;
-            currentStressRate += (targetStressRate - currentStressRate) * 0.08;
-            
-            drawScene();
-            requestAnimationFrame(animate);
-        }
-
-        function drawGrid() {
-            ctx.strokeStyle = '#ecf0f1';
-            ctx.lineWidth = 1;
-            for(let i = 0; i < canvas.width; i += 20) {
-                ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
-            }
-            for(let i = 0; i < canvas.height; i += 20) {
-                ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); ctx.stroke();
-            }
-        }
-
-        function getStressGradient(x1, y1, x2, y2, stressRate, isBroken) {
-            const grad = ctx.createLinearGradient(x1, y1, x2, y2);
-            let matKey = document.getElementById('materiau').value;
-            let baseColor = materiaux[matKey].defaultColor;
-
-            if (currentLevel === 3) {
-                if (isBroken) {
-                    grad.addColorStop(0, "#c0392b");
-                    grad.addColorStop(0.5, "#e74c3c");
-                    grad.addColorStop(1, "#c0392b");
-                } else if (stressRate > 80) {
-                    grad.addColorStop(0, "#e67e22");
-                    grad.addColorStop(0.5, "#f1c40f");
-                    grad.addColorStop(1, "#e67e22");
-                } else if (stressRate > 40) {
-                    grad.addColorStop(0, "#27ae60");
-                    grad.addColorStop(0.5, "#2ecc71");
-                    grad.addColorStop(1, "#27ae60");
-                } else {
-                    grad.addColorStop(0, "#2980b9");
-                    grad.addColorStop(0.5, "#3498db");
-                    grad.addColorStop(1, "#2980b9");
-                }
-            } else {
-                grad.addColorStop(0, baseColor);
-                grad.addColorStop(1, adjustColor(baseColor, 40));
-            }
-            return grad;
-        }
-
-        function adjustColor(color, amount) {
-            return '#' + color.replace(/^#/, '').replace(/../g, color => ('0'+Math.min(255, Math.max(0, parseInt(color, 16) + amount)).toString(16)).substr(-2));
-        }
-
-        function drawSupport(x, y, type) {
-            ctx.fillStyle = '#7f8c8d';
-            ctx.strokeStyle = '#2c3e50';
-            ctx.lineWidth = 2;
-            
-            if (type === 'fixe') {
-                ctx.beginPath();
-                ctx.moveTo(x, y);
-                ctx.lineTo(x - 15, y + 25);
-                ctx.lineTo(x + 15, y + 25);
-                ctx.closePath();
-                ctx.fill(); ctx.stroke();
-                ctx.fillRect(x - 20, y + 25, 40, 10);
-            } else if (type === 'mobile') {
-                ctx.beginPath();
-                ctx.arc(x - 8, y + 10, 8, 0, Math.PI * 2);
-                ctx.arc(x + 8, y + 10, 8, 0, Math.PI * 2);
-                ctx.fill(); ctx.stroke();
-                ctx.fillRect(x - 20, y + 20, 40, 10);
-            }
-        }
-
-        function drawLabel(text, x, y, align="center") {
-            ctx.save();
-            ctx.font = "bold 13px 'Segoe UI', Arial, sans-serif";
-            ctx.textAlign = align;
-            ctx.textBaseline = "middle";
-            
-            ctx.lineWidth = 4;
-            ctx.strokeStyle = "rgba(255, 255, 255, 0.9)";
-            ctx.strokeText(text, x, y);
-            
-            ctx.fillStyle = "#2c3e50";
-            ctx.fillText(text, x, y);
-            ctx.restore();
-        }
-
-        // Nouvelle fonction pour dessiner le symbole de rupture
-        function drawFracture(x, y) {
-            ctx.save();
-            ctx.translate(x, y);
-            ctx.beginPath();
-            // Dessin d'une "étoile de rupture" stylisée
-            const pts = [
-                0, -18, 5, -5, 18, -8, 8, 5, 15, 18, 0, 10, -15, 18, -8, 5, -18, -8, -5, -5
-            ];
-            ctx.moveTo(pts[0], pts[1]);
-            for(let i=2; i<pts.length; i+=2) {
-                ctx.lineTo(pts[i], pts[i+1]);
-            }
-            ctx.closePath();
-            
-            ctx.fillStyle = "#f39c12"; // Orange d'avertissement
-            ctx.fill();
-            ctx.lineWidth = 2.5;
-            ctx.strokeStyle = "#c0392b"; // Rouge foncé
-            ctx.stroke();
-            ctx.restore();
-        }
-
-        function drawScene() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            drawGrid();
-
-            const inputEntrait = parseFloat(document.getElementById('dim-entrait').value) || 1;
-            const inputArba = parseFloat(document.getElementById('dim-arba').value) || 1;
-            
-            if (inputArba <= inputEntrait / 2) return;
-
-            const valPoincon = Math.sqrt(Math.pow(inputArba, 2) - Math.pow(inputEntrait / 2, 2));
-            const geoRatio = valPoincon / inputEntrait;
-            
-            let drawWidth = 550;
-            let drawHeight = drawWidth * geoRatio;
-            
-            const originX = 400 - drawWidth / 2; 
-            const originY = 320;
-            const width = drawWidth;
-            const height = drawHeight;
-
-            const forceMaxRef = parseFloat(document.getElementById('force-max').value) || 1000;
-
-            const hasPoincon = document.getElementById('struct-poincon').checked;
-            const hasContreficheG = document.getElementById('struct-contrefiche-g').checked;
-            const hasContreficheD = document.getElementById('struct-contrefiche-d').checked;
-            
-            const fC = document.getElementById('force-C').checked ? (currentLevel === 3 ? parseFloat(document.getElementById('val-force-C').value) : 150) : 0;
-            const fE = document.getElementById('force-E').checked ? (currentLevel === 3 ? parseFloat(document.getElementById('val-force-E').value) : 150) : 0;
-            const fF = document.getElementById('force-F').checked ? (currentLevel === 3 ? parseFloat(document.getElementById('val-force-F').value) : 150) : 0;
-            const fD = document.getElementById('force-D').checked ? (currentLevel === 3 ? parseFloat(document.getElementById('val-force-D').value) : 150) : 0;
-            const fAB = document.getElementById('force-AB').checked ? (currentLevel === 3 ? parseFloat(document.getElementById('val-force-AB').value) : 150) : 0;
-
-            let facteurVertical = (fC/forceMaxRef) + (fE/forceMaxRef)*0.75 + (fF/forceMaxRef)*0.75 + (fD/forceMaxRef);
-            facteurVertical = Math.min(facteurVertical, 6); 
-            const defY = currentDef * 0.35 * facteurVertical; 
-            
-            let facteurHorizontal = (fAB/forceMaxRef);
-            facteurHorizontal = Math.min(facteurHorizontal, 4);
-            const defX = facteurHorizontal * currentDef * 2.5; 
-
-            // Recalcul de la section locale pour le dessin
-            let sectionVal = 100;
-            if (currentLevel <= 4) {
-                const forme = document.getElementById('section-forme').value;
-                if (forme === 'carree') {
-                    const a = parseFloat(document.getElementById('dim-a').value) || 0;
-                    sectionVal = a * a;
-                } else {
-                    const b = parseFloat(document.getElementById('dim-b').value) || 0;
-                    const h = parseFloat(document.getElementById('dim-h').value) || 0;
-                    sectionVal = b * h;
-                }
-            }
-
-            const forceTotale = fC + fE + fF + fD + fAB;
-            // Rupture visible si taux > 100% (et force présente)
-            const isBroken = (currentStressRate > 100 && currentLevel === 3) || (sectionVal === 0 && forceTotale > 0);
-
-            let rawA = { x: originX - defX, y: originY }; 
-            let rawB = { x: originX + width + defX, y: originY }; 
-            
-            let asymX = 0;
-            if (hasContreficheG && !hasContreficheD && (fC || fE || fF)) asymX = defY * 0.4;
-            if (!hasContreficheG && hasContreficheD && (fC || fE || fF)) asymX = -defY * 0.4;
-            asymX -= (fE/forceMaxRef) * currentDef * 0.3;
-            asymX += (fF/forceMaxRef) * currentDef * 0.3;
-            
-            let rawC = { x: originX + width/2 + asymX, y: originY - height + defY }; 
-            
-            const dExtraDef = (!hasPoincon && fD > 0) ? defY * 1.5 : 0;
-            let rawD = { x: originX + width/2 + asymX, y: originY + defY * 0.5 + dExtraDef }; 
-
-            const eSag = (fE / forceMaxRef) * currentDef * (hasContreficheG ? 0.1 : 1.2);
-            let rawE = { x: (rawA.x + rawC.x) / 2, y: (rawA.y + rawC.y) / 2 + eSag }; 
-
-            const fSag = (fF / forceMaxRef) * currentDef * (hasContreficheD ? 0.1 : 1.2);
-            let rawF = { x: (rawB.x + rawC.x) / 2, y: (rawB.y + rawC.y) / 2 + fSag }; 
-
-            // Auto-framing
-            let minX = Math.min(rawA.x, rawB.x, rawC.x, rawD.x, rawE.x, rawF.x);
-            let maxX = Math.max(rawA.x, rawB.x, rawC.x, rawD.x, rawE.x, rawF.x);
-            let minY = Math.min(rawA.y, rawB.y, rawC.y, rawD.y, rawE.y, rawF.y);
-            let maxY = Math.max(rawA.y, rawB.y, rawC.y, rawD.y, rawE.y, rawF.y);
-
-            let curW = Math.max(maxX - minX, 550); 
-            let curH = Math.max(maxY - minY, 240);
-
-            const padTop = 130; 
-            const padBottom = 80; 
-            const padSide = 120; 
-
-            let targetScale = Math.min((canvas.width - 2 * padSide) / curW, (canvas.height - padTop - padBottom) / curH);
-            targetScale = Math.min(1.2, Math.max(0.1, targetScale)); 
-
-            let targetCamX = (minX + maxX) / 2;
-            let targetCamY = (minY + maxY) / 2;
-
-            camX += (targetCamX - camX) * 0.1;
-            camY += (targetCamY - camY) * 0.1;
-            camScale += (targetScale - camScale) * 0.1;
-
-            let displayCx = canvas.width / 2;
-            let displayCy = padTop + (canvas.height - padTop - padBottom) / 2;
-
-            function transform(pt) {
-                return {
-                    x: displayCx + (pt.x - camX) * camScale,
-                    y: displayCy + (pt.y - camY) * camScale
-                };
-            }
-
-            const A = transform(rawA); 
-            const B = transform(rawB); 
-            const C = transform(rawC); 
-            const D = transform(rawD); 
-            const E = transform(rawE); 
-            const F = transform(rawF); 
-
-            // Ligne de sol
-            ctx.strokeStyle = '#bdc3c7';
-            ctx.lineWidth = 3;
-            ctx.beginPath(); 
-            ctx.moveTo(0, A.y + 25); 
-            ctx.lineTo(canvas.width, B.y + 25); 
-            ctx.stroke();
-
-            let visualThickness = 12;
-            if (currentLevel <= 4) {
-                visualThickness = sectionVal === 0 ? 2 : 6 + (sectionVal / 500) * 8; 
-            }
-
-            ctx.lineCap = "round";
-            ctx.lineJoin = "round";
-
-            function renderCurvedBeam(p1, pMid, p2) {
-                const cpX = 2 * pMid.x - 0.5 * p1.x - 0.5 * p2.x;
-                const cpY = 2 * pMid.y - 0.5 * p1.y - 0.5 * p2.y;
-
-                ctx.beginPath();
-                ctx.moveTo(p1.x, p1.y);
-                ctx.quadraticCurveTo(cpX, cpY, p2.x, p2.y);
-                
-                ctx.lineWidth = visualThickness;
-                ctx.strokeStyle = getStressGradient(p1.x, p1.y, p2.x, p2.y, currentStressRate, isBroken);
-                if (isBroken) ctx.setLineDash([15, 10]);
-                else ctx.setLineDash([]);
-                ctx.stroke();
-                
-                if (sectionVal > 0) {
-                    ctx.lineWidth = 2;
-                    ctx.strokeStyle = '#2c3e50';
-                    ctx.setLineDash([]);
-                    ctx.stroke();
-                }
-            }
-
-            function renderBeam(p1, p2) {
-                ctx.beginPath();
-                ctx.moveTo(p1.x, p1.y);
-                ctx.lineTo(p2.x, p2.y);
-                ctx.lineWidth = visualThickness;
-                ctx.strokeStyle = getStressGradient(p1.x, p1.y, p2.x, p2.y, currentStressRate, isBroken);
-                if (isBroken) ctx.setLineDash([15, 10]);
-                else ctx.setLineDash([]);
-                ctx.stroke();
-                
-                if (sectionVal > 0) {
-                    ctx.lineWidth = 2;
-                    ctx.strokeStyle = '#2c3e50';
-                    ctx.setLineDash([]);
-                    ctx.stroke();
-                }
-            }
-
-            renderCurvedBeam(A, E, C); 
-            renderCurvedBeam(B, F, C); 
-            renderCurvedBeam(A, D, B); 
-
-            if (hasPoincon) renderBeam(C, D); 
-            if (hasContreficheG) renderBeam(D, E); 
-            if (hasContreficheD) renderBeam(D, F); 
-
-            ctx.fillStyle = '#f1c40f';
-            ctx.strokeStyle = '#2c3e50';
-            ctx.lineWidth = 2;
-            
-            let activeNodes = [A, B, C];
-            if (hasPoincon || hasContreficheG || hasContreficheD || fD > 0) activeNodes.push(D);
-            if (hasContreficheG || fE > 0) activeNodes.push(E);
-            if (hasContreficheD || fF > 0) activeNodes.push(F);
-
-            activeNodes.forEach(node => {
-                ctx.beginPath();
-                ctx.arc(node.x, node.y, visualThickness/2 + 2, 0, Math.PI * 2);
-                ctx.fill(); ctx.stroke();
-            });
-
-            // Affichage des fractures d'éclatement si rupture
-            if (isBroken && forceTotale > 0) {
-                if (fC > 0) drawFracture(C.x, C.y + 15);
-                if (fE > 0) drawFracture(E.x, E.y);
-                if (fF > 0) drawFracture(F.x, F.y);
-                if (fD > 0) drawFracture(D.x, D.y);
-                if (fAB > 0) {
-                    // Si on tire sur les appuis, ça casse au milieu de l'entrait
-                    drawFracture((A.x + D.x) / 2, (A.y + D.y) / 2);
-                    drawFracture((B.x + D.x) / 2, (B.y + D.y) / 2);
-                }
-                
-                // Si la rupture est due uniquement à une section nulle sans force précise cochée (cas rare ici)
-                if (fC === 0 && fE === 0 && fF === 0 && fD === 0 && fAB === 0) {
-                    drawFracture(D.x, D.y);
-                }
-            }
-
-            if (sectionVal > 0) {
-                drawLabel("Entrait", D.x, D.y + 25, "center");
-                drawLabel("Arba.", E.x - 15, E.y - 15, "right");
-                drawLabel("Arba.", F.x + 15, F.y - 15, "left");
-                
-                if (hasPoincon) drawLabel("Poinçon", (C.x + D.x)/2 + 15, (C.y + D.y)/2, "left");
-                if (hasContreficheG) drawLabel("Contre. G", (D.x + E.x)/2, (D.y + E.y)/2 + 20, "center");
-                if (hasContreficheD) drawLabel("Contre. D", (D.x + F.x)/2, (D.y + F.y)/2 + 20, "center");
-            }
-
-            if (fAB > 0) {
-                drawSupport(A.x, A.y, 'mobile'); 
-            } else {
-                drawSupport(A.x, A.y, 'fixe'); 
-            }
-            drawSupport(B.x, B.y, 'mobile'); 
-
-            ctx.fillStyle = "#e84118";
-            ctx.strokeStyle = "#c23616";
-            ctx.lineWidth = 3;
-
-            function drawBoldArrow(x, y, angle, label, forceValue) {
-                if (forceValue === 0) return;
-
-                ctx.save();
-                ctx.translate(x, y);
-                ctx.rotate(angle);
-                
-                const minLength = 15;
-                const maxLength = 100;
-                const ratio = Math.min(forceValue / forceMaxRef, 1);
-                const bodyLength = minLength + (ratio * (maxLength - minLength));
-                
-                ctx.fillRect(0, -6, -bodyLength, 12);
-                ctx.strokeRect(0, -6, -bodyLength, 12);
-                
-                ctx.beginPath();
-                ctx.moveTo(0, -12);
-                ctx.lineTo(15, 0);
-                ctx.lineTo(0, 12);
-                ctx.closePath();
-                ctx.fill(); ctx.stroke();
-
-                if (label && currentLevel === 3) {
-                    ctx.rotate(-angle); 
-                    ctx.fillStyle = "#2c3e50";
-                    ctx.font = "bold 13px Arial";
-                    ctx.fillText(label, 15, -20);
-                }
-                ctx.restore();
-            }
-
-            if (fC > 0) drawBoldArrow(C.x, C.y - visualThickness - 10, Math.PI/2, fC + " N", fC);
-            if (fE > 0) drawBoldArrow(E.x, E.y - visualThickness - 10, Math.PI/2, fE + " N", fE);
-            if (fF > 0) drawBoldArrow(F.x, F.y - visualThickness - 10, Math.PI/2, fF + " N", fF);
-            if (fD > 0) drawBoldArrow(D.x, D.y - visualThickness - 10, Math.PI/2, fD + " N", fD);
-            if (fAB > 0) {
-                drawBoldArrow(A.x - visualThickness - 10, A.y, Math.PI, fAB + " N", fAB);
-                drawBoldArrow(B.x + visualThickness + 10, B.y, 0, "", fAB);
-            }
-        }
-
-        window.onload = init;
-    </script>
+</script>
 </body>
 </html>
