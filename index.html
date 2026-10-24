@@ -51,6 +51,17 @@
     flex-shrink: 0;
   }
   header p { margin: 0; color: var(--texte-clair); font-size: 0.98rem; }
+  /* Bouton « Accueil » du lanceur des editeurs (blockly_ts_lanceur) : affiche seulement si le simulateur a ete ouvert depuis sa page d'accueil. */
+  header { position: relative; }
+  .header-accueil {
+    position: absolute; top: 8px; left: 8px;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 12px; border-radius: 999px;
+    background: var(--carte); color: var(--bleu); border: 1px solid var(--bleu);
+    font-weight: 600; font-size: 0.9rem; text-decoration: none; transition: background 0.2s, color 0.2s;
+  }
+  .header-accueil:hover, .header-accueil:focus-visible { background: var(--bleu); color: #fff; outline: none; }
+  @media (max-width: 640px) { .header-accueil { position: static; margin-bottom: 10px; } }
 
   /* =========================================
      NAVIGATION ET ONGLETS
@@ -1163,6 +1174,43 @@ updateSliderScale('traction');
 switchTab('torsion');
 animate();
 
+</script>
+<script>
+// ---------- Bouton « Accueil » : retour a la page d'accueil du lanceur (blockly_ts_lanceur) ----------
+// Le simulateur ouvert depuis la page d'accueil recoit l'adresse de retour :
+//  - ?lanceur=<port>  lanceur local : retour vers http://localhost:<port>/ ;
+//  - ?accueil=<url>   version en ligne : retour vers cette adresse, acceptee seulement sur jreynaud42000.github.io
+//                     (ou localhost) pour qu'un lien exterieur ne puisse pas detourner le bouton.
+// L'adresse est gardee pour l'onglet (sessionStorage). Ouvert autrement, pas de bouton.
+(function () {
+  function adresseAccueil() {
+    const parametres = new URLSearchParams(location.search);
+    const port = parametres.get('lanceur');
+    if (/^\d{2,5}$/.test(port || '')) return 'http://localhost:' + port + '/';
+    try {
+      const url = new URL(parametres.get('accueil') || '');
+      const local = url.protocol === 'http:' && ['localhost', '127.0.0.1'].includes(url.hostname);
+      if (local || (url.protocol === 'https:' && url.hostname === 'jreynaud42000.github.io')) return url.href;
+    } catch (e) { /* parametre absent ou adresse invalide */ }
+    return null;
+  }
+  let adresse = adresseAccueil();
+  try {
+    if (adresse) sessionStorage.setItem('accueilLanceur', adresse);
+    else adresse = sessionStorage.getItem('accueilLanceur');
+  } catch (e) { /* stockage refuse : bouton seulement si le parametre est la */ }
+  const entete = document.querySelector('header');
+  if (!adresse || !entete || document.getElementById('header-accueil')) return;
+  const lien = document.createElement('a');
+  lien.id = 'header-accueil';
+  lien.className = 'header-accueil';
+  lien.href = adresse;
+  lien.title = "Revenir à l'accueil : choix de l'éditeur";
+  lien.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+    'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg>' +
+    '<span>Accueil</span>';
+  entete.insertBefore(lien, entete.firstChild);
+})();
 </script>
 </body>
 </html>
