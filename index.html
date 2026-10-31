@@ -35,7 +35,8 @@
   /* =========================================
      EN-TÊTE ET LOGOS
   ========================================= */
-  header { text-align: center; padding: 8px 8px 18px; }
+  /* Bandeau aux couleurs de la charte Educatech, comme les editeurs Easybloc : degrade vert d'eau vers violet, filet magenta. */
+  header { text-align: center; padding: 14px 8px 16px; margin-bottom: 16px; background: linear-gradient(90deg, #1f9e8f, #6a2c91); border-bottom: 3px solid #e0218a; border-radius: 12px; color: #fff; }
   .title-wrapper {
     display: flex; 
     justify-content: center; 
@@ -43,24 +44,24 @@
     gap: 16px; 
     margin-bottom: 6px;
   }
-  header h1 { font-size: clamp(1.3rem, 3vw, 1.9rem); margin: 0; color: var(--bleu); }
+  header h1 { font-size: clamp(1.3rem, 3vw, 1.9rem); margin: 0; color: #fff; }
   .header-logo {
     height: clamp(40px, 6vw, 75px);
     width: auto;
     object-fit: contain;
     flex-shrink: 0;
   }
-  header p { margin: 0; color: var(--texte-clair); font-size: 0.98rem; }
+  header p { margin: 0; color: #fff; font-size: 0.98rem; }
   /* Bouton « Accueil » du lanceur des editeurs (blockly_ts_lanceur) : affiche seulement si le simulateur a ete ouvert depuis sa page d'accueil. */
   header { position: relative; }
   .header-accueil {
     position: absolute; top: 8px; left: 8px;
     display: inline-flex; align-items: center; gap: 6px;
     padding: 7px 12px; border-radius: 999px;
-    background: var(--carte); color: var(--bleu); border: 1px solid var(--bleu);
+    background: #fff; color: #1f2328; border: 1px solid #fff;
     font-weight: 600; font-size: 0.9rem; text-decoration: none; transition: background 0.2s, color 0.2s;
   }
-  .header-accueil:hover, .header-accueil:focus-visible { background: var(--bleu); color: #fff; outline: none; }
+  .header-accueil:hover, .header-accueil:focus-visible { background: #fff; color: #6a2c91; outline: 2px solid #fff; outline-offset: 2px; }
   @media (max-width: 640px) { .header-accueil { position: static; margin-bottom: 10px; } }
 
   /* =========================================
